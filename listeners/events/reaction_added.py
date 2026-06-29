@@ -36,10 +36,14 @@ async def handle_reaction_added(
         if reaction not in CHECKIN_EMOJIS:
             return
 
-        # Check if there's an active crisis in this channel
+        # Check if there's an active crisis in this channel, or fall back to any active crisis
         crisis = crisis_manager.get_crisis_by_channel(channel_id)
         if not crisis:
-            return
+            active = crisis_manager.get_active_crises()
+            if active:
+                crisis = active[0]
+            else:
+                return
 
         status = CHECKIN_EMOJIS[reaction]
 
