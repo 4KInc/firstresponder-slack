@@ -1,0 +1,4 @@
+facility_id,resource_type,location_description,floor,zone_id,notes
+main-building,aed,Main office lobby next to front desk,1,admin,
+main-building,first_aid_kit,Nurse office Room 108,1,east-wing-f1,
+main-building,fire_extinguisher,East hallway between rooms 104 and 105,1,east-wing-f1,

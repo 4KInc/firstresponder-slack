@@ -1,0 +1,4 @@
+service_type,name,address,phone,distance_miles,eta_minutes,trauma_level,helipad
+hospital,Vanderbilt University Medical Center,"1211 Medical Center Dr, Nashville, TN 37232",615-322-5000,3.2,8,Level I,true
+police_station,Metro Nashville Police - Central Precinct,601 Korean Veterans Blvd,615-862-8600,1.5,4,,false
+fire_station,Nashville Fire Station 9,1000 2nd Ave S,615-862-5421,0.8,3,,false

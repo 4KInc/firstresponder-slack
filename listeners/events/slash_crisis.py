@@ -49,6 +49,8 @@ async def handle_crisis_command(
             await _handle_resolve(client, channel_id, user_id)
         elif subcommand == "playbook":
             await _handle_playbook(client, channel_id, user_id, parts)
+        elif subcommand == "setup":
+            await _handle_setup(client, channel_id, user_id)
         else:
             await client.chat_postEphemeral(
                 channel=channel_id,
@@ -73,10 +75,47 @@ async def _send_help(client, channel_id, user_id):
         "`/crisis checkin [safe|injured|evacuated|need-help]` — Check in\n"
         "`/crisis resolve` — Resolve the active crisis\n"
         "`/crisis playbook <type>` — View a response playbook\n"
+        "`/crisis setup` — Configure your building and personnel\n"
         "`/crisis help` — Show this help message\n\n"
         f"*Crisis types:* {', '.join(CRISIS_TYPES.keys())}"
     )
     await client.chat_postEphemeral(channel=channel_id, user=user_id, text=help_text)
+
+
+async def _handle_setup(client, channel_id, user_id):
+    from crisis.knowledge import knowledge_base
+    summary = knowledge_base.get_facility_summary()
+    non_zero = {k: v for k, v in summary.items() if v > 0}
+
+    if non_zero:
+        status_text = "*Current Knowledge Base:*\n" + "\n".join(
+            f"- {k.replace('_', ' ').title()}: {v}" for k, v in non_zero.items()
+        )
+    else:
+        status_text = ":warning: *Knowledge base is empty.* FirstResponder will give generic guidance until you upload your building data."
+
+    setup_text = (
+        "*FirstResponder — Setup Your Building*\n\n"
+        f"{status_text}\n\n"
+        "---\n\n"
+        "*How to configure:*\n"
+        "1. Download CSV templates from the GitHub repo (`templates/` folder)\n"
+        "2. Fill them out with your building's data\n"
+        "3. DM me (FirstResponder) and drag-drop each CSV file\n"
+        "4. I'll auto-detect the type and load it\n\n"
+        "*CSV files to upload (in this order):*\n"
+        "1. `facility.csv` — Your building(s): name, address, floors\n"
+        "2. `zones.csv` — Wings, areas, floors with exits and shelter locations\n"
+        "3. `rooms.csv` — Individual rooms with zone assignments\n"
+        "4. `personnel.csv` — Staff with locations, phones, emergency contacts, medical notes, training\n"
+        "5. `emergency_resources.csv` — AEDs, fire extinguishers, first aid kits\n"
+        "6. `evacuation_routes.csv` — Routes with threat-zone blocking\n"
+        "7. `assembly_points.csv` — Rally points with capacity\n"
+        "8. `nearby_services.csv` — Hospitals, police, fire stations with ETA\n\n"
+        "*The more data you upload, the smarter FirstResponder becomes during a crisis.*\n"
+        "Without data: generic playbooks. With data: room-specific evacuation, named personnel, nearest AED locations."
+    )
+    await client.chat_postEphemeral(channel=channel_id, user=user_id, text=setup_text)
 
 
 async def _handle_start(client, channel_id, user_id, parts):

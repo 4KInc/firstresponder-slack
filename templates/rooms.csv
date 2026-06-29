@@ -1,0 +1,4 @@
+room_id,facility_id,name,floor,zone_id,room_type,capacity,notes
+101,main-building,Room 101,1,east-wing-f1,classroom,25,3rd grade
+102,main-building,Room 102,1,east-wing-f1,classroom,25,3rd grade
+103,main-building,Room 103,1,east-wing-f1,classroom,25,4th grade
