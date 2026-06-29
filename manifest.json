@@ -68,6 +68,7 @@
         "pins:write",
         "reactions:read",
         "reactions:write",
+        "files:read",
         "users:read",
         "assistant:write"
       ]
@@ -83,7 +84,8 @@
         "message.channels",
         "message.groups",
         "message.im",
-        "reaction_added"
+        "reaction_added",
+        "file_shared"
       ]
     },
     "interactivity": {
