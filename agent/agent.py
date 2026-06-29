@@ -11,29 +11,27 @@ from claude_agent_sdk.types import McpHttpServerConfig
 from agent.context import agent_deps_var
 from agent.deps import AgentDeps
 from agent.tools import (
-    start_crisis_tool,
-    check_in_tool,
-    crisis_status_tool,
-    resolve_crisis_tool,
-    generate_sitrep_tool,
-    get_playbook_tool,
-    add_emoji_reaction_tool,
-    create_incident_channel_tool,
-    assign_incident_commander_tool,
+    # Crisis management
+    start_crisis_tool, check_in_tool, crisis_status_tool, resolve_crisis_tool,
+    generate_sitrep_tool, get_playbook_tool, add_emoji_reaction_tool,
+    create_incident_channel_tool, assign_incident_commander_tool,
     generate_after_action_report_tool,
-    search_past_incidents_tool,
-    get_incident_intelligence_tool,
-    add_lesson_learned_tool,
-    get_organization_stats_tool,
+    # Intelligence & learning
+    search_past_incidents_tool, get_incident_intelligence_tool,
+    add_lesson_learned_tool, get_organization_stats_tool,
     get_missing_checkin_report_tool,
-    get_evacuation_guidance_tool,
-    find_emergency_resources_tool,
-    lookup_person_tool,
-    find_first_aid_responders_tool,
-    get_blast_radius_tool,
-    get_vendor_contacts_tool,
-    get_drill_performance_tool,
-    get_knowledge_summary_tool,
+    # Knowledge base — general
+    get_evacuation_guidance_tool, find_emergency_resources_tool,
+    lookup_person_tool, find_first_aid_responders_tool,
+    get_blast_radius_tool, get_vendor_contacts_tool,
+    get_drill_performance_tool, get_knowledge_summary_tool,
+    # Physical safety
+    get_utility_controls_tool, get_assembly_points_tool,
+    get_hazmat_info_tool, get_nearest_emergency_services_tool,
+    get_people_in_danger_zone_tool,
+    # Cyber & operations
+    get_data_at_risk_tool, get_runbook_tool, get_on_call_tool,
+    get_continuity_plan_tool,
 )
 
 SYSTEM_PROMPT = """\
@@ -88,28 +86,87 @@ Don't wait to be asked. During an active crisis:
 - If roles haven't been assigned after 5 minutes, remind the team to assign an IC
 - After resolution, always prompt for lessons learned — this is how you get smarter
 
-## KNOWLEDGE-AWARE RESPONSE (THIS IS YOUR SUPERPOWER)
-You have access to the organization's knowledge base — building layouts, personnel \
-directory, emergency resource locations, network topology, vendor contacts, and drill history.
+## SCENARIO-SPECIFIC INTELLIGENCE (THIS IS YOUR SUPERPOWER)
 
-When a PHYSICAL crisis starts (fire, earthquake, active-threat, flood, weather, medical):
-1. Call `get_evacuation_guidance` with the threat location to get safe routes and blocked routes
-2. Call `find_emergency_resources` to locate nearby AEDs, fire extinguishers, first aid kits
-3. Call `lookup_person` for anyone who hasn't checked in — find their likely location
-4. Call `find_first_aid_responders` during medical emergencies to dispatch trained personnel
-5. Call `get_drill_performance` to benchmark: "Last fire drill took 4:32 — we should beat that"
+You have access to the organization's complete knowledge base. Your responses are NOT \
+generic — they are specific to THIS building, THESE people, THIS infrastructure.
 
-When a CYBER crisis starts (cyberattack, data-breach, outage):
-1. Call `get_blast_radius` with the compromised asset to map downstream impact
-2. Call `get_vendor_contacts` to find escalation paths for affected services
-3. Use network topology to advise: "This server connects to auth AND payments — isolate both"
+### FIRE Response Protocol
+1. `get_evacuation_guidance(threat_location)` — safe/blocked routes based on fire location
+2. `get_utility_controls(utility_type="gas")` — find gas shutoff to prevent explosion
+3. `get_hazmat_info(zone_id)` — check for chemicals near the fire (toxic fumes risk)
+4. `get_assembly_points()` — tell people WHERE to rally for headcount
+5. `get_people_in_danger_zone(zone_id)` — who is in the fire zone right now?
+6. `get_nearest_emergency_services(service_type="fire_station")` — ETA for fire department
+7. `get_drill_performance(drill_type="fire")` — "Last fire drill: 4:32. Let's beat that."
 
-When ANYONE hasn't checked in:
-1. Call `lookup_person` — get their default location, floor, phone, emergency contacts
-2. Tell the IC: "Mrs. Thompson is usually in Room 204, Floor 2, east wing. Her emergency contact is John Thompson: 555-0142"
+### EARTHQUAKE Response Protocol
+1. During shaking: "Drop, Cover, Hold On" — no evacuation during shaking
+2. After shaking: `get_utility_controls()` — shut off ALL utilities (gas, electric, water)
+3. `get_hazmat_info()` — check ALL zones for ruptured chemical containers
+4. `get_evacuation_guidance()` — structural damage may block routes, use alternates
+5. `get_people_in_danger_zone()` — prioritize mobility-limited personnel
+6. `get_nearest_emergency_services(service_type="hospital")` — for injuries
+7. `get_continuity_plan(scenario_type="earthquake")` — backup facility if building condemned
+
+### ACTIVE THREAT Response Protocol
+1. `get_people_in_danger_zone(zone_id)` — who is near the threat? HIGHEST PRIORITY
+2. `get_evacuation_guidance(threat_location)` — safe routes AWAY from threat
+3. `lookup_person(slack_user_id)` — for anyone missing, find their location + phone
+4. `get_nearest_emergency_services(service_type="police_station")` — police ETA
+5. `get_assembly_points()` — safe rally point for evacuees (AWAY from threat)
+6. Do NOT recommend fire alarm — it gathers people in open areas
+
+### FLOOD Response Protocol
+1. `get_utility_controls(utility_type="electrical")` — shut power to flooded areas (electrocution risk)
+2. `get_hazmat_info()` — chemicals that could contaminate floodwater
+3. `get_evacuation_guidance()` — routes to higher ground
+4. `get_people_in_danger_zone(floor=1)` — ground floor personnel at highest risk
+5. `get_continuity_plan(scenario_type="flood")` — remote work or backup facility
+
+### MEDICAL EMERGENCY Response Protocol
+1. `find_first_aid_responders()` — dispatch nearest CPR/AED trained person
+2. `find_emergency_resources(resource_type="aed")` — nearest AED location
+3. `lookup_person(slack_user_id)` — check patient's medical notes, allergies, conditions
+4. `get_nearest_emergency_services(service_type="hospital")` — nearest hospital with trauma level
+5. `get_nearest_emergency_services(service_type="trauma_center")` — if severe
+
+### CYBERATTACK Response Protocol
+1. `get_blast_radius(asset_id)` — what depends on the compromised system?
+2. `get_runbook(scenario_type="ransomware")` — tested recovery procedure
+3. `get_on_call(service="security")` — page security team immediately
+4. `get_data_at_risk(storage_system)` — what sensitive data is exposed?
+5. `get_vendor_contacts(service)` — vendor escalation for affected services
+
+### DATA BREACH Response Protocol
+1. `get_data_at_risk(storage_system)` — CRITICAL: what data, how many records, what PII?
+2. Check regulatory requirements: GDPR 72h, HIPAA 60 days, PCI-DSS immediately
+3. `get_blast_radius(asset_id)` — was only one system breached or did it spread?
+4. `get_on_call(service="security")` AND `get_on_call(service="legal")` — both teams needed
+5. `get_runbook(scenario_type="data-breach")` — notification procedures
+
+### SERVICE OUTAGE Response Protocol
+1. `get_blast_radius(asset_id)` — full dependency tree of affected service
+2. `get_on_call(service)` — page on-call engineer
+3. `get_runbook(system=affected_system)` — step-by-step recovery
+4. `get_vendor_contacts(service)` — if third-party service is down
+5. `get_continuity_plan(scenario_type="outage")` — if extended outage
+
+### SEVERE WEATHER Response Protocol
+1. `get_continuity_plan(scenario_type="weather")` — remote work? early dismissal?
+2. `get_assembly_points()` — interior shelter points (tornado) or evacuation points
+3. `get_utility_controls()` — prep for potential power loss
+4. `get_people_in_danger_zone()` — anyone in vulnerable locations?
+5. `get_drill_performance(drill_type="weather")` — past shelter-in-place performance
+
+### WHEN SOMEONE IS MISSING (ANY SCENARIO)
+1. `lookup_person(slack_user_id)` — their location, floor, phone, emergency contacts
+2. `get_people_in_danger_zone()` — are they in a threatened area?
+3. Tell IC: exact location, phone number, emergency contact, medical notes
+4. `get_missing_checkin_report()` — escalation level based on elapsed time
 
 If no knowledge data is loaded, the agent still works with generic playbooks. But WITH \
-knowledge data, every response is location-specific, people-specific, and infrastructure-specific.
+knowledge data, every response is specific to THIS building, THESE people, THIS infrastructure.
 
 ## CRISIS TYPES
 You handle: earthquake, fire, flood, active-threat, cyberattack, data-breach, \
@@ -148,32 +205,27 @@ You have access to the Slack MCP Server for searching messages and channels. Use
 """
 
 ALL_TOOLS = [
-    # Crisis management
-    start_crisis_tool,
-    check_in_tool,
-    crisis_status_tool,
-    resolve_crisis_tool,
-    generate_sitrep_tool,
-    get_playbook_tool,
-    add_emoji_reaction_tool,
-    create_incident_channel_tool,
-    assign_incident_commander_tool,
+    # Crisis management (10)
+    start_crisis_tool, check_in_tool, crisis_status_tool, resolve_crisis_tool,
+    generate_sitrep_tool, get_playbook_tool, add_emoji_reaction_tool,
+    create_incident_channel_tool, assign_incident_commander_tool,
     generate_after_action_report_tool,
-    # Intelligence & learning
-    search_past_incidents_tool,
-    get_incident_intelligence_tool,
-    add_lesson_learned_tool,
-    get_organization_stats_tool,
+    # Intelligence & learning (5)
+    search_past_incidents_tool, get_incident_intelligence_tool,
+    add_lesson_learned_tool, get_organization_stats_tool,
     get_missing_checkin_report_tool,
-    # Knowledge base
-    get_evacuation_guidance_tool,
-    find_emergency_resources_tool,
-    lookup_person_tool,
-    find_first_aid_responders_tool,
-    get_blast_radius_tool,
-    get_vendor_contacts_tool,
-    get_drill_performance_tool,
-    get_knowledge_summary_tool,
+    # Knowledge base — general (8)
+    get_evacuation_guidance_tool, find_emergency_resources_tool,
+    lookup_person_tool, find_first_aid_responders_tool,
+    get_blast_radius_tool, get_vendor_contacts_tool,
+    get_drill_performance_tool, get_knowledge_summary_tool,
+    # Physical safety (5)
+    get_utility_controls_tool, get_assembly_points_tool,
+    get_hazmat_info_tool, get_nearest_emergency_services_tool,
+    get_people_in_danger_zone_tool,
+    # Cyber & operations (4)
+    get_data_at_risk_tool, get_runbook_tool, get_on_call_tool,
+    get_continuity_plan_tool,
 ]
 
 agent_tools_server = create_sdk_mcp_server(
@@ -185,32 +237,27 @@ agent_tools_server = create_sdk_mcp_server(
 SLACK_MCP_URL = "https://mcp.slack.com/mcp"
 
 AGENT_TOOL_NAMES = [
-    # Crisis management
-    "start_crisis",
-    "check_in",
-    "crisis_status",
-    "resolve_crisis",
-    "generate_sitrep",
-    "get_playbook",
-    "add_emoji_reaction",
-    "create_incident_channel",
-    "assign_incident_commander",
+    # Crisis management (10)
+    "start_crisis", "check_in", "crisis_status", "resolve_crisis",
+    "generate_sitrep", "get_playbook", "add_emoji_reaction",
+    "create_incident_channel", "assign_incident_commander",
     "generate_after_action_report",
-    # Intelligence & learning
-    "search_past_incidents",
-    "get_incident_intelligence",
-    "add_lesson_learned",
-    "get_organization_stats",
+    # Intelligence & learning (5)
+    "search_past_incidents", "get_incident_intelligence",
+    "add_lesson_learned", "get_organization_stats",
     "get_missing_checkin_report",
-    # Knowledge base
-    "get_evacuation_guidance",
-    "find_emergency_resources",
-    "lookup_person",
-    "find_first_aid_responders",
-    "get_blast_radius",
-    "get_vendor_contacts",
-    "get_drill_performance",
-    "get_knowledge_summary",
+    # Knowledge base — general (8)
+    "get_evacuation_guidance", "find_emergency_resources",
+    "lookup_person", "find_first_aid_responders",
+    "get_blast_radius", "get_vendor_contacts",
+    "get_drill_performance", "get_knowledge_summary",
+    # Physical safety (5)
+    "get_utility_controls", "get_assembly_points",
+    "get_hazmat_info", "get_nearest_emergency_services",
+    "get_people_in_danger_zone",
+    # Cyber & operations (4)
+    "get_data_at_risk", "get_runbook", "get_on_call",
+    "get_continuity_plan",
 ]
 
 
