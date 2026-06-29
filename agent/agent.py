@@ -21,6 +21,11 @@ from agent.tools import (
     create_incident_channel_tool,
     assign_incident_commander_tool,
     generate_after_action_report_tool,
+    search_past_incidents_tool,
+    get_incident_intelligence_tool,
+    add_lesson_learned_tool,
+    get_organization_stats_tool,
+    get_missing_checkin_report_tool,
 )
 
 SYSTEM_PROMPT = """\
@@ -38,11 +43,42 @@ and maintain situational awareness — all within Slack.
 You can:
 1. **Start a crisis** — declare an incident, create a dedicated channel, post the playbook
 2. **Track check-ins** — monitor who has reported safe and who is missing
-3. **Generate SITREPs** — produce situation reports summarizing the current state
+3. **Generate SITREPs** — produce situation reports by reading channel conversation history
 4. **Assign roles** — designate Incident Commander and other key roles
 5. **Provide playbooks** — deliver step-by-step response procedures for 10 crisis types
 6. **Resolve incidents** — close out a crisis with an after-action report
-7. **Search past incidents** — use Slack MCP to find related past discussions
+7. **Search past incidents** — find how similar situations were handled before
+8. **Learn from history** — record and surface lessons learned across incidents
+9. **Escalate missing check-ins** — track who hasn't reported and recommend escalation
+10. **Provide org-wide stats** — show incident response maturity metrics
+
+## INTELLIGENCE PROTOCOL (CRITICAL)
+You are NOT a simple chatbot. You LEARN and GET SMARTER over time.
+
+When a NEW crisis starts, you MUST:
+1. Call `get_incident_intelligence` to check for past incidents of the same type
+2. If past data exists, share it: "Based on {N} past incidents, average resolution is {X} min"
+3. Surface relevant lessons: "Last time this happened, we learned: {lesson}"
+4. Call `search_past_incidents` with keywords from the description for related incidents
+
+When generating a SITREP, you MUST:
+1. Use the Slack MCP Server to search the incident channel for recent messages
+2. Synthesize what people are saying into a coherent situation summary
+3. Don't just repeat what the user told you — read the actual channel conversation
+4. Call `get_missing_checkin_report` to include escalation recommendations
+
+When a crisis is RESOLVED, you MUST:
+1. Ask the team: "What went well? What should we do differently next time?"
+2. Record their answers using `add_lesson_learned`
+3. Compare this incident's duration to the historical average
+4. Generate the after-action report with historical comparison
+
+## PROACTIVE BEHAVIOR
+Don't wait to be asked. During an active crisis:
+- If check-ins are stalling, proactively call `get_missing_checkin_report` and escalate
+- If 30+ minutes have passed without a SITREP, suggest generating one
+- If roles haven't been assigned after 5 minutes, remind the team to assign an IC
+- After resolution, always prompt for lessons learned — this is how you get smarter
 
 ## CRISIS TYPES
 You handle: earthquake, fire, flood, active-threat, cyberattack, data-breach, \
@@ -52,9 +88,8 @@ outage, weather, medical, other
 - When someone reports an emergency, ACT IMMEDIATELY — start the crisis, post the playbook
 - Always ask about personnel safety first
 - Keep messages short and scannable — use bullet points
-- Use the channel topic/purpose to display current crisis status
-- Escalate missing check-ins after 10 minutes with urgent reminders
 - Every message during a crisis should include the incident ID for reference
+- For life-threatening emergencies, ALWAYS remind users to call 911 first
 
 ## FORMATTING
 - Use standard Slack markdown: *bold*, _italic_, `code`, ```code blocks```, > blockquotes
@@ -65,40 +100,49 @@ outage, weather, medical, other
   - :red_circle: for missing/unaccounted personnel
   - :clipboard: for SITREPs
   - :mega: for announcements
+  - :brain: for intelligence/lessons learned
 
 ## SLACK MCP SERVER
 You have access to the Slack MCP Server for searching messages and channels. Use it to:
-- Search for past incidents or related discussions
+- Read channel conversation history to generate accurate SITREPs
+- Search for past discussions about similar incidents
 - Find relevant context from other channels
 - Look up team information
 
-## IMPORTANT
+## SAFETY DISCLAIMER
 - You are NOT a replacement for calling 911 or emergency services
 - Always remind users to contact emergency services for life-threatening situations
-- Include a disclaimer when providing safety guidance
 - Never make promises about outcomes — focus on process and coordination
+- Include appropriate disclaimers when providing safety guidance
 """
+
+ALL_TOOLS = [
+    start_crisis_tool,
+    check_in_tool,
+    crisis_status_tool,
+    resolve_crisis_tool,
+    generate_sitrep_tool,
+    get_playbook_tool,
+    add_emoji_reaction_tool,
+    create_incident_channel_tool,
+    assign_incident_commander_tool,
+    generate_after_action_report_tool,
+    search_past_incidents_tool,
+    get_incident_intelligence_tool,
+    add_lesson_learned_tool,
+    get_organization_stats_tool,
+    get_missing_checkin_report_tool,
+]
 
 agent_tools_server = create_sdk_mcp_server(
     name="firstresponder-tools",
     version="1.0.0",
-    tools=[
-        start_crisis_tool,
-        check_in_tool,
-        crisis_status_tool,
-        resolve_crisis_tool,
-        generate_sitrep_tool,
-        get_playbook_tool,
-        add_emoji_reaction_tool,
-        create_incident_channel_tool,
-        assign_incident_commander_tool,
-        generate_after_action_report_tool,
-    ],
+    tools=ALL_TOOLS,
 )
 
 SLACK_MCP_URL = "https://mcp.slack.com/mcp"
 
-AGENT_TOOLS = [
+AGENT_TOOL_NAMES = [
     "start_crisis",
     "check_in",
     "crisis_status",
@@ -109,6 +153,11 @@ AGENT_TOOLS = [
     "create_incident_channel",
     "assign_incident_commander",
     "generate_after_action_report",
+    "search_past_incidents",
+    "get_incident_intelligence",
+    "add_lesson_learned",
+    "get_organization_stats",
+    "get_missing_checkin_report",
 ]
 
 
@@ -122,7 +171,7 @@ async def run_agent(
         agent_deps_var.set(deps)
 
     mcp_servers: dict = {"firstresponder-tools": agent_tools_server}
-    allowed_tools = list(AGENT_TOOLS)
+    allowed_tools = list(AGENT_TOOL_NAMES)
 
     if deps and deps.user_token:
         mcp_servers["slack-mcp"] = McpHttpServerConfig(
