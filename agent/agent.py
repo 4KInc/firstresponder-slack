@@ -26,6 +26,14 @@ from agent.tools import (
     add_lesson_learned_tool,
     get_organization_stats_tool,
     get_missing_checkin_report_tool,
+    get_evacuation_guidance_tool,
+    find_emergency_resources_tool,
+    lookup_person_tool,
+    find_first_aid_responders_tool,
+    get_blast_radius_tool,
+    get_vendor_contacts_tool,
+    get_drill_performance_tool,
+    get_knowledge_summary_tool,
 )
 
 SYSTEM_PROMPT = """\
@@ -80,6 +88,29 @@ Don't wait to be asked. During an active crisis:
 - If roles haven't been assigned after 5 minutes, remind the team to assign an IC
 - After resolution, always prompt for lessons learned — this is how you get smarter
 
+## KNOWLEDGE-AWARE RESPONSE (THIS IS YOUR SUPERPOWER)
+You have access to the organization's knowledge base — building layouts, personnel \
+directory, emergency resource locations, network topology, vendor contacts, and drill history.
+
+When a PHYSICAL crisis starts (fire, earthquake, active-threat, flood, weather, medical):
+1. Call `get_evacuation_guidance` with the threat location to get safe routes and blocked routes
+2. Call `find_emergency_resources` to locate nearby AEDs, fire extinguishers, first aid kits
+3. Call `lookup_person` for anyone who hasn't checked in — find their likely location
+4. Call `find_first_aid_responders` during medical emergencies to dispatch trained personnel
+5. Call `get_drill_performance` to benchmark: "Last fire drill took 4:32 — we should beat that"
+
+When a CYBER crisis starts (cyberattack, data-breach, outage):
+1. Call `get_blast_radius` with the compromised asset to map downstream impact
+2. Call `get_vendor_contacts` to find escalation paths for affected services
+3. Use network topology to advise: "This server connects to auth AND payments — isolate both"
+
+When ANYONE hasn't checked in:
+1. Call `lookup_person` — get their default location, floor, phone, emergency contacts
+2. Tell the IC: "Mrs. Thompson is usually in Room 204, Floor 2, east wing. Her emergency contact is John Thompson: 555-0142"
+
+If no knowledge data is loaded, the agent still works with generic playbooks. But WITH \
+knowledge data, every response is location-specific, people-specific, and infrastructure-specific.
+
 ## CRISIS TYPES
 You handle: earthquake, fire, flood, active-threat, cyberattack, data-breach, \
 outage, weather, medical, other
@@ -117,6 +148,7 @@ You have access to the Slack MCP Server for searching messages and channels. Use
 """
 
 ALL_TOOLS = [
+    # Crisis management
     start_crisis_tool,
     check_in_tool,
     crisis_status_tool,
@@ -127,11 +159,21 @@ ALL_TOOLS = [
     create_incident_channel_tool,
     assign_incident_commander_tool,
     generate_after_action_report_tool,
+    # Intelligence & learning
     search_past_incidents_tool,
     get_incident_intelligence_tool,
     add_lesson_learned_tool,
     get_organization_stats_tool,
     get_missing_checkin_report_tool,
+    # Knowledge base
+    get_evacuation_guidance_tool,
+    find_emergency_resources_tool,
+    lookup_person_tool,
+    find_first_aid_responders_tool,
+    get_blast_radius_tool,
+    get_vendor_contacts_tool,
+    get_drill_performance_tool,
+    get_knowledge_summary_tool,
 ]
 
 agent_tools_server = create_sdk_mcp_server(
@@ -143,6 +185,7 @@ agent_tools_server = create_sdk_mcp_server(
 SLACK_MCP_URL = "https://mcp.slack.com/mcp"
 
 AGENT_TOOL_NAMES = [
+    # Crisis management
     "start_crisis",
     "check_in",
     "crisis_status",
@@ -153,11 +196,21 @@ AGENT_TOOL_NAMES = [
     "create_incident_channel",
     "assign_incident_commander",
     "generate_after_action_report",
+    # Intelligence & learning
     "search_past_incidents",
     "get_incident_intelligence",
     "add_lesson_learned",
     "get_organization_stats",
     "get_missing_checkin_report",
+    # Knowledge base
+    "get_evacuation_guidance",
+    "find_emergency_resources",
+    "lookup_person",
+    "find_first_aid_responders",
+    "get_blast_radius",
+    "get_vendor_contacts",
+    "get_drill_performance",
+    "get_knowledge_summary",
 ]
 
 
