@@ -405,6 +405,22 @@ class KnowledgeBase:
         )
         self._conn.commit()
 
+    # --- Assembly Points ---
+
+    def add_assembly_point(self, point_id: str, facility_id: str, name: str,
+                           location_description: str, capacity: int = 0,
+                           is_primary: bool = True, alternate_point_id: str = None,
+                           accessibility: str = "standard", notes: str = ""):
+        self._conn.execute(
+            """INSERT OR REPLACE INTO assembly_points
+               (id, facility_id, name, location_description, capacity, is_primary,
+                alternate_point_id, accessibility, notes)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (point_id, facility_id, name, location_description, capacity,
+             int(is_primary), alternate_point_id, accessibility, notes),
+        )
+        self._conn.commit()
+
     # --- Query Methods (used by AI agent during crises) ---
 
     def get_evacuation_guidance(self, threat_location: str = "", floor: int = None) -> dict:
