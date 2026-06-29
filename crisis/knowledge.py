@@ -145,11 +145,132 @@ class KnowledgeBase:
                 notes TEXT DEFAULT ''
             );
 
+            -- === PHYSICAL SAFETY LAYER ===
+
+            CREATE TABLE IF NOT EXISTS utility_controls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                facility_id TEXT NOT NULL REFERENCES facilities(id),
+                utility_type TEXT NOT NULL,
+                location_description TEXT NOT NULL,
+                floor INTEGER,
+                zone_id TEXT REFERENCES zones(id),
+                shutoff_instructions TEXT DEFAULT '',
+                requires_key INTEGER DEFAULT 0,
+                key_location TEXT DEFAULT '',
+                notes TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS assembly_points (
+                id TEXT PRIMARY KEY,
+                facility_id TEXT NOT NULL REFERENCES facilities(id),
+                name TEXT NOT NULL,
+                location_description TEXT NOT NULL,
+                capacity INTEGER DEFAULT 0,
+                is_primary INTEGER DEFAULT 1,
+                alternate_point_id TEXT,
+                accessibility TEXT DEFAULT 'standard',
+                notes TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS hazmat_locations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                facility_id TEXT NOT NULL REFERENCES facilities(id),
+                material_name TEXT NOT NULL,
+                hazard_class TEXT NOT NULL,
+                location_description TEXT NOT NULL,
+                floor INTEGER,
+                zone_id TEXT REFERENCES zones(id),
+                quantity TEXT DEFAULT '',
+                sds_location TEXT DEFAULT '',
+                containment_instructions TEXT DEFAULT '',
+                notes TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS nearby_services (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                service_type TEXT NOT NULL,
+                name TEXT NOT NULL,
+                address TEXT DEFAULT '',
+                phone TEXT DEFAULT '',
+                distance_miles REAL,
+                eta_minutes INTEGER,
+                trauma_level TEXT DEFAULT '',
+                helipad INTEGER DEFAULT 0,
+                notes TEXT DEFAULT ''
+            );
+
+            -- === CYBER / DATA LAYER ===
+
+            CREATE TABLE IF NOT EXISTS data_inventory (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                data_classification TEXT NOT NULL,
+                storage_system TEXT NOT NULL,
+                record_count TEXT DEFAULT '',
+                pii_fields TEXT DEFAULT '[]',
+                regulatory_frameworks TEXT DEFAULT '[]',
+                backup_location TEXT DEFAULT '',
+                backup_frequency TEXT DEFAULT '',
+                retention_policy TEXT DEFAULT '',
+                data_owner TEXT DEFAULT '',
+                notification_requirements TEXT DEFAULT '',
+                notes TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS runbooks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                scenario_type TEXT NOT NULL,
+                system_or_service TEXT DEFAULT '',
+                severity TEXT DEFAULT 'medium',
+                steps TEXT NOT NULL DEFAULT '[]',
+                estimated_minutes INTEGER DEFAULT 0,
+                last_tested TEXT DEFAULT '',
+                owner TEXT DEFAULT '',
+                notes TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS on_call_schedules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                team_name TEXT NOT NULL,
+                service TEXT NOT NULL,
+                primary_name TEXT NOT NULL,
+                primary_slack_id TEXT DEFAULT '',
+                primary_phone TEXT DEFAULT '',
+                secondary_name TEXT DEFAULT '',
+                secondary_slack_id TEXT DEFAULT '',
+                secondary_phone TEXT DEFAULT '',
+                escalation_manager TEXT DEFAULT '',
+                escalation_phone TEXT DEFAULT '',
+                schedule_notes TEXT DEFAULT ''
+            );
+
+            -- === WEATHER / CONTINUITY LAYER ===
+
+            CREATE TABLE IF NOT EXISTS continuity_plans (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                scenario_type TEXT NOT NULL,
+                plan_name TEXT NOT NULL,
+                trigger_conditions TEXT DEFAULT '',
+                actions TEXT NOT NULL DEFAULT '[]',
+                remote_work_capable INTEGER DEFAULT 0,
+                backup_facility TEXT DEFAULT '',
+                critical_functions TEXT DEFAULT '[]',
+                recovery_time_objective_hours INTEGER DEFAULT 0,
+                notes TEXT DEFAULT ''
+            );
+
             CREATE INDEX IF NOT EXISTS idx_rooms_zone ON rooms(zone_id);
             CREATE INDEX IF NOT EXISTS idx_rooms_floor ON rooms(floor);
             CREATE INDEX IF NOT EXISTS idx_personnel_location ON personnel(default_location);
             CREATE INDEX IF NOT EXISTS idx_resources_type ON emergency_resources(resource_type);
             CREATE INDEX IF NOT EXISTS idx_assets_type ON network_assets(asset_type);
+            CREATE INDEX IF NOT EXISTS idx_utility_type ON utility_controls(utility_type);
+            CREATE INDEX IF NOT EXISTS idx_hazmat_zone ON hazmat_locations(zone_id);
+            CREATE INDEX IF NOT EXISTS idx_data_class ON data_inventory(data_classification);
+            CREATE INDEX IF NOT EXISTS idx_runbooks_scenario ON runbooks(scenario_type);
+            CREATE INDEX IF NOT EXISTS idx_oncall_service ON on_call_schedules(service);
+            CREATE INDEX IF NOT EXISTS idx_continuity_scenario ON continuity_plans(scenario_type);
         """)
         self._conn.commit()
 
@@ -406,19 +527,138 @@ class KnowledgeBase:
             "FROM personnel WHERE trained_first_aid = 1 OR trained_cpr = 1"
         ).fetchall()]
 
+    # --- Physical Safety Queries ---
+
+    def get_utility_controls(self, utility_type: str = None, zone_id: str = None,
+                             floor: int = None) -> list[dict]:
+        """Find utility shutoff controls (gas, electric, water, HVAC)."""
+        query = "SELECT * FROM utility_controls WHERE 1=1"
+        params = []
+        if utility_type:
+            query += " AND utility_type = ?"
+            params.append(utility_type)
+        if zone_id:
+            query += " AND zone_id = ?"
+            params.append(zone_id)
+        if floor is not None:
+            query += " AND floor = ?"
+            params.append(floor)
+        return [dict(r) for r in self._conn.execute(query, params).fetchall()]
+
+    def get_assembly_points(self, facility_id: str = None) -> list[dict]:
+        """Get designated assembly/rally points."""
+        if facility_id:
+            rows = self._conn.execute(
+                "SELECT * FROM assembly_points WHERE facility_id = ? ORDER BY is_primary DESC",
+                (facility_id,)
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT * FROM assembly_points ORDER BY is_primary DESC"
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_hazmat_near_threat(self, zone_id: str = None, floor: int = None) -> list[dict]:
+        """Find hazardous materials near a threat zone."""
+        query = "SELECT * FROM hazmat_locations WHERE 1=1"
+        params = []
+        if zone_id:
+            query += " AND zone_id = ?"
+            params.append(zone_id)
+        if floor is not None:
+            query += " AND floor = ?"
+            params.append(floor)
+        return [dict(r) for r in self._conn.execute(query, params).fetchall()]
+
+    def get_nearby_emergency_services(self, service_type: str = None) -> list[dict]:
+        """Get nearby hospitals, fire stations, police stations."""
+        if service_type:
+            rows = self._conn.execute(
+                "SELECT * FROM nearby_services WHERE service_type = ? ORDER BY eta_minutes ASC",
+                (service_type,)
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT * FROM nearby_services ORDER BY service_type, eta_minutes ASC"
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    # --- Cyber / Data Queries ---
+
+    def get_data_at_risk(self, storage_system: str) -> list[dict]:
+        """Find what sensitive data lives on a compromised system."""
+        return [dict(r) for r in self._conn.execute(
+            "SELECT * FROM data_inventory WHERE storage_system LIKE ?",
+            (f"%{storage_system}%",)
+        ).fetchall()]
+
+    def get_data_by_classification(self, classification: str) -> list[dict]:
+        """Get all data assets of a given classification level."""
+        return [dict(r) for r in self._conn.execute(
+            "SELECT * FROM data_inventory WHERE data_classification = ?",
+            (classification,)
+        ).fetchall()]
+
+    def get_runbook(self, scenario_type: str = None, system: str = None) -> list[dict]:
+        """Find runbooks for a scenario or system."""
+        query = "SELECT * FROM runbooks WHERE 1=1"
+        params = []
+        if scenario_type:
+            query += " AND scenario_type = ?"
+            params.append(scenario_type)
+        if system:
+            query += " AND system_or_service LIKE ?"
+            params.append(f"%{system}%")
+        query += " ORDER BY severity DESC"
+        return [dict(r) for r in self._conn.execute(query, params).fetchall()]
+
+    def get_on_call(self, service: str = None) -> list[dict]:
+        """Get current on-call rotation for a service."""
+        if service:
+            rows = self._conn.execute(
+                "SELECT * FROM on_call_schedules WHERE service LIKE ?",
+                (f"%{service}%",)
+            ).fetchall()
+        else:
+            rows = self._conn.execute("SELECT * FROM on_call_schedules").fetchall()
+        return [dict(r) for r in rows]
+
+    # --- Continuity Queries ---
+
+    def get_continuity_plan(self, scenario_type: str) -> list[dict]:
+        """Get business continuity plan for a scenario type."""
+        return [dict(r) for r in self._conn.execute(
+            "SELECT * FROM continuity_plans WHERE scenario_type = ?",
+            (scenario_type,)
+        ).fetchall()]
+
+    # --- Summary ---
+
     def get_facility_summary(self) -> dict:
         """Get a summary of all organizational knowledge loaded."""
         conn = self._conn
+
+        def _count(table):
+            return conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+
         return {
-            "facilities": conn.execute("SELECT COUNT(*) FROM facilities").fetchone()[0],
-            "zones": conn.execute("SELECT COUNT(*) FROM zones").fetchone()[0],
-            "rooms": conn.execute("SELECT COUNT(*) FROM rooms").fetchone()[0],
-            "personnel": conn.execute("SELECT COUNT(*) FROM personnel").fetchone()[0],
-            "emergency_resources": conn.execute("SELECT COUNT(*) FROM emergency_resources").fetchone()[0],
-            "network_assets": conn.execute("SELECT COUNT(*) FROM network_assets").fetchone()[0],
-            "vendor_contacts": conn.execute("SELECT COUNT(*) FROM vendor_contacts").fetchone()[0],
-            "evacuation_routes": conn.execute("SELECT COUNT(*) FROM evacuation_routes").fetchone()[0],
-            "drills_recorded": conn.execute("SELECT COUNT(*) FROM drill_history").fetchone()[0],
+            "facilities": _count("facilities"),
+            "zones": _count("zones"),
+            "rooms": _count("rooms"),
+            "personnel": _count("personnel"),
+            "emergency_resources": _count("emergency_resources"),
+            "network_assets": _count("network_assets"),
+            "vendor_contacts": _count("vendor_contacts"),
+            "evacuation_routes": _count("evacuation_routes"),
+            "drills_recorded": _count("drill_history"),
+            "utility_controls": _count("utility_controls"),
+            "assembly_points": _count("assembly_points"),
+            "hazmat_locations": _count("hazmat_locations"),
+            "nearby_services": _count("nearby_services"),
+            "data_inventory": _count("data_inventory"),
+            "runbooks": _count("runbooks"),
+            "on_call_schedules": _count("on_call_schedules"),
+            "continuity_plans": _count("continuity_plans"),
             "first_aid_trained": conn.execute("SELECT COUNT(*) FROM personnel WHERE trained_first_aid = 1").fetchone()[0],
             "cpr_trained": conn.execute("SELECT COUNT(*) FROM personnel WHERE trained_cpr = 1").fetchone()[0],
             "mobility_limited": conn.execute("SELECT COUNT(*) FROM personnel WHERE mobility_limitations = 1").fetchone()[0],
