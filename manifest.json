@@ -1,0 +1,98 @@
+{
+  "display_information": {
+    "name": "FirstResponder",
+    "description": "Crisis & incident coordination agent — turns your Slack workspace into a coordination center in 60 seconds.",
+    "background_color": "#dc2626"
+  },
+  "features": {
+    "assistant_view": {
+      "assistant_description": "I'm FirstResponder, your crisis coordination agent. I help teams respond to incidents, track check-ins, and generate situation reports — right here in Slack.",
+      "suggested_prompts": []
+    },
+    "app_home": {
+      "home_tab_enabled": true,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": false
+    },
+    "bot_user": {
+      "display_name": "FirstResponder",
+      "always_online": true
+    },
+    "slash_commands": [
+      {
+        "command": "/crisis",
+        "description": "Start, manage, or resolve a crisis incident",
+        "usage_hint": "start [type] [description] | status | resolve | checkin"
+      }
+    ]
+  },
+  "oauth_config": {
+    "redirect_urls": [
+      "https://ngrok-free.app/slack/oauth_redirect"
+    ],
+    "scopes": {
+      "user": [
+        "search:read",
+        "search:read.public",
+        "search:read.private",
+        "search:read.mpim",
+        "search:read.im",
+        "search:read.files",
+        "search:read.users",
+        "channels:history",
+        "channels:read",
+        "groups:history",
+        "groups:read",
+        "im:history",
+        "mpim:history",
+        "users:read",
+        "chat:write",
+        "canvases:read",
+        "canvases:write",
+        "users:read.email"
+      ],
+      "bot": [
+        "app_mentions:read",
+        "channels:history",
+        "channels:manage",
+        "channels:read",
+        "chat:write",
+        "chat:write.public",
+        "commands",
+        "groups:history",
+        "groups:read",
+        "groups:write",
+        "im:history",
+        "im:read",
+        "im:write",
+        "pins:write",
+        "reactions:read",
+        "reactions:write",
+        "users:read",
+        "assistant:write"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://ngrok-free.app/slack/events",
+      "bot_events": [
+        "app_home_opened",
+        "app_mention",
+        "assistant_thread_started",
+        "message.channels",
+        "message.groups",
+        "message.im",
+        "reaction_added"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true,
+      "request_url": "https://ngrok-free.app/slack/events"
+    },
+    "is_mcp_enabled": true,
+    "org_deploy_enabled": true,
+    "socket_mode_enabled": true,
+    "token_rotation_enabled": false
+  }
+}
