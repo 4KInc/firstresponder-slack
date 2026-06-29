@@ -477,16 +477,38 @@ class KnowledgeBase:
         return [dict(r) for r in self._conn.execute(query, params).fetchall()]
 
     def get_personnel_in_zone(self, zone_id: str = None, floor: int = None) -> list[dict]:
-        """Get personnel assigned to a zone or floor."""
-        query = "SELECT * FROM personnel WHERE 1=1"
-        params = []
+        """Get personnel assigned to a zone or floor.
 
+        Searches both:
+        - Personnel whose default_location matches the zone_id directly
+        - Personnel whose default_location is a room that belongs to the zone
+        """
         if zone_id:
-            query += " AND default_location = ?"
-            params.append(zone_id)
-        if floor is not None:
-            query += " AND floor = ?"
-            params.append(floor)
+            # Find rooms in this zone to get their IDs
+            room_ids = [r["id"] for r in self._conn.execute(
+                "SELECT id FROM rooms WHERE zone_id = ?", (zone_id,)
+            ).fetchall()]
+
+            # Build query: match zone directly OR match any room in the zone
+            placeholders = ", ".join("?" for _ in room_ids)
+            all_locations = [zone_id] + room_ids
+
+            if room_ids:
+                query = f"SELECT * FROM personnel WHERE default_location IN ({', '.join('?' for _ in all_locations)})"
+                params = all_locations
+            else:
+                query = "SELECT * FROM personnel WHERE default_location = ?"
+                params = [zone_id]
+
+            if floor is not None:
+                query += " AND floor = ?"
+                params.append(floor)
+        else:
+            query = "SELECT * FROM personnel WHERE 1=1"
+            params = []
+            if floor is not None:
+                query += " AND floor = ?"
+                params.append(floor)
 
         return [dict(r) for r in self._conn.execute(query, params).fetchall()]
 
