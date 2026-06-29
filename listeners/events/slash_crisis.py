@@ -132,9 +132,18 @@ async def _handle_start(client, channel_id, user_id, parts):
 async def _handle_status(client, channel_id, user_id):
     crisis = crisis_manager.get_crisis_by_channel(channel_id)
 
+    # Fall back to any active crisis if none in this channel
     if not crisis:
         active = crisis_manager.get_active_crises()
-        if active:
+        if not active:
+            await client.chat_postEphemeral(
+                channel=channel_id, user=user_id, text=":white_check_mark: No active crises."
+            )
+            return
+        if len(active) == 1:
+            crisis = active[0]
+        else:
+            # Multiple active crises — list them all
             lines = [":clipboard: *Active Crises:*\n"]
             for c in active:
                 info = CRISIS_TYPES.get(c.crisis_type, CRISIS_TYPES["other"])
@@ -144,11 +153,7 @@ async def _handle_status(client, channel_id, user_id):
                     f"Check-ins: {len(c.check_ins)}/{len(c.team_roster)}"
                 )
             await client.chat_postEphemeral(channel=channel_id, user=user_id, text="\n".join(lines))
-        else:
-            await client.chat_postEphemeral(
-                channel=channel_id, user=user_id, text=":white_check_mark: No active crises."
-            )
-        return
+            return
 
     info = CRISIS_TYPES.get(crisis.crisis_type, CRISIS_TYPES["other"])
     missing = crisis.missing_checkins
@@ -186,7 +191,7 @@ async def _handle_checkin(client, channel_id, user_id, parts):
             crisis = active[0]
         else:
             await client.chat_postEphemeral(
-                channel=channel_id, user=user_id, text=":warning: No active crisis to check into."
+                channel=channel_id, user=user_id, text=":warning: No active crisis to check in to."
             )
             return
 
@@ -204,10 +209,15 @@ async def _handle_checkin(client, channel_id, user_id, parts):
 async def _handle_resolve(client, channel_id, user_id):
     crisis = crisis_manager.get_crisis_by_channel(channel_id)
     if not crisis:
-        await client.chat_postEphemeral(
-            channel=channel_id, user=user_id, text=":warning: No active crisis in this channel to resolve."
-        )
-        return
+        # Fall back to any active crisis (may have been started in a DM or other channel)
+        active = crisis_manager.get_active_crises()
+        if active:
+            crisis = active[0]
+        else:
+            await client.chat_postEphemeral(
+                channel=channel_id, user=user_id, text=":warning: No active crises to resolve."
+            )
+            return
 
     resolved = crisis_manager.resolve_crisis(crisis.id, user_id)
     report = crisis_manager.generate_after_action_report(crisis.id)
