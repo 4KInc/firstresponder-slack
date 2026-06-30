@@ -479,26 +479,39 @@ class KnowledgeBase:
     def get_personnel_in_zone(self, zone_id: str = None, floor: int = None) -> list[dict]:
         """Get personnel assigned to a zone or floor.
 
-        Searches both:
-        - Personnel whose default_location matches the zone_id directly
-        - Personnel whose default_location is a room that belongs to the zone
+        Supports:
+        - Exact zone match: "east-wing-f1" → finds people in that zone
+        - Partial zone match: "east-wing" → finds people in "east-wing-f1" AND "east-wing-f2"
+        - Room join: also finds people whose default_location is a room belonging to matched zones
         """
         if zone_id:
-            # Find rooms in this zone to get their IDs
-            room_ids = [r["id"] for r in self._conn.execute(
-                "SELECT id FROM rooms WHERE zone_id = ?", (zone_id,)
+            # Find matching zones — exact match first, then partial (LIKE) match
+            matching_zones = [r["id"] for r in self._conn.execute(
+                "SELECT id FROM zones WHERE id = ? OR id LIKE ?",
+                (zone_id, f"{zone_id}%")
             ).fetchall()]
 
-            # Build query: match zone directly OR match any room in the zone
-            placeholders = ", ".join("?" for _ in room_ids)
-            all_locations = [zone_id] + room_ids
+            if not matching_zones:
+                matching_zones = [zone_id]
 
-            if room_ids:
-                query = f"SELECT * FROM personnel WHERE default_location IN ({', '.join('?' for _ in all_locations)})"
-                params = all_locations
-            else:
-                query = "SELECT * FROM personnel WHERE default_location = ?"
-                params = [zone_id]
+            # Find rooms in all matching zones
+            zone_placeholders = ", ".join("?" for _ in matching_zones)
+            room_ids = [r["id"] for r in self._conn.execute(
+                f"SELECT id FROM rooms WHERE zone_id IN ({zone_placeholders})",
+                matching_zones
+            ).fetchall()]
+
+            # All possible locations: zone IDs + room IDs
+            all_locations = matching_zones + room_ids
+            loc_placeholders = ", ".join("?" for _ in all_locations)
+
+            # Also match personnel whose default_location starts with the zone prefix
+            query = (
+                f"SELECT * FROM personnel WHERE "
+                f"default_location IN ({loc_placeholders}) "
+                f"OR default_location LIKE ?"
+            )
+            params = all_locations + [f"{zone_id}%"]
 
             if floor is not None:
                 query += " AND floor = ?"
