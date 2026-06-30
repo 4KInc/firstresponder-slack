@@ -8,6 +8,7 @@ and loads rows into the SQLite knowledge base.
 """
 
 import csv
+import json
 import io
 from dataclasses import dataclass
 
@@ -36,6 +37,7 @@ class IngestResult:
 
 # Required columns for each CSV type
 SCHEMAS = {
+    # Physical
     "facility": ["facility_id", "name"],
     "zones": ["zone_id", "facility_id", "name", "floor", "zone_type"],
     "rooms": ["room_id", "facility_id", "name", "floor"],
@@ -44,6 +46,14 @@ SCHEMAS = {
     "evacuation_routes": ["facility_id", "name", "to_exit", "route_description"],
     "assembly_points": ["point_id", "facility_id", "name", "location_description"],
     "nearby_services": ["service_type", "name"],
+    "utility_controls": ["facility_id", "utility_type", "location_description"],
+    "hazmat_locations": ["facility_id", "material_name", "hazard_class", "location_description"],
+    # Cyber & operations
+    "network_assets": ["asset_id", "name", "asset_type"],
+    "data_inventory": ["data_id", "name", "data_classification", "storage_system"],
+    "runbooks": ["title", "scenario_type", "steps"],
+    "on_call_schedules": ["team_name", "service", "primary_name"],
+    "continuity_plans": ["scenario_type", "plan_name", "actions"],
 }
 
 
@@ -117,6 +127,13 @@ def ingest_csv(content: str, filename: str = "") -> IngestResult:
         "evacuation_routes": _ingest_evacuation_routes,
         "assembly_points": _ingest_assembly_points,
         "nearby_services": _ingest_nearby_services,
+        "utility_controls": _ingest_utility_controls,
+        "hazmat_locations": _ingest_hazmat_locations,
+        "network_assets": _ingest_network_assets,
+        "data_inventory": _ingest_data_inventory,
+        "runbooks": _ingest_runbooks,
+        "on_call_schedules": _ingest_on_call_schedules,
+        "continuity_plans": _ingest_continuity_plans,
     }
 
     return parsers[csv_type](reader, csv_type)
@@ -295,6 +312,228 @@ def _ingest_nearby_services(reader, csv_type) -> IngestResult:
                     _parse_int(row.get("eta_minutes", "0")),
                     row.get("trauma_level", "").strip(),
                     int(_parse_bool(row.get("helipad", "false"))),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_utility_controls(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            kb._conn.execute(
+                """INSERT INTO utility_controls
+                   (facility_id, utility_type, location_description, floor, zone_id,
+                    shutoff_instructions, requires_key, key_location)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["facility_id"].strip(),
+                    row["utility_type"].strip(),
+                    row["location_description"].strip(),
+                    _parse_int(row.get("floor", "1")),
+                    row.get("zone_id", "").strip() or None,
+                    row.get("shutoff_instructions", "").strip(),
+                    int(_parse_bool(row.get("requires_key", "false"))),
+                    row.get("key_location", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_hazmat_locations(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            kb._conn.execute(
+                """INSERT INTO hazmat_locations
+                   (facility_id, material_name, hazard_class, location_description, floor,
+                    zone_id, quantity, sds_location, containment_instructions)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["facility_id"].strip(),
+                    row["material_name"].strip(),
+                    row["hazard_class"].strip(),
+                    row["location_description"].strip(),
+                    _parse_int(row.get("floor", "1")),
+                    row.get("zone_id", "").strip() or None,
+                    row.get("quantity", "").strip(),
+                    row.get("sds_location", "").strip(),
+                    row.get("containment_instructions", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_network_assets(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            deps = row.get("dependencies", "[]").strip()
+            if not deps.startswith("["):
+                deps = "[]"
+            kb.add_network_asset(
+                row["asset_id"].strip(),
+                row["name"].strip(),
+                row["asset_type"].strip(),
+                row.get("ip_address", "").strip(),
+                row.get("location", "").strip(),
+                row.get("criticality", "medium").strip(),
+                json.loads(deps),
+                row.get("owner", "").strip(),
+                row.get("notes", "").strip(),
+            )
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_data_inventory(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            pii = row.get("pii_fields", "[]").strip()
+            if not pii.startswith("["):
+                pii = "[]"
+            regs = row.get("regulatory_frameworks", "[]").strip()
+            if not regs.startswith("["):
+                regs = "[]"
+            kb._conn.execute(
+                """INSERT OR REPLACE INTO data_inventory
+                   (id, name, data_classification, storage_system, record_count,
+                    pii_fields, regulatory_frameworks, backup_location, backup_frequency,
+                    retention_policy, data_owner, notification_requirements, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["data_id"].strip(),
+                    row["name"].strip(),
+                    row["data_classification"].strip(),
+                    row["storage_system"].strip(),
+                    row.get("record_count", "").strip(),
+                    pii,
+                    regs,
+                    row.get("backup_location", "").strip(),
+                    row.get("backup_frequency", "").strip(),
+                    row.get("retention_policy", "").strip(),
+                    row.get("data_owner", "").strip(),
+                    row.get("notification_requirements", "").strip(),
+                    row.get("notes", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_runbooks(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            steps = row.get("steps", "[]").strip()
+            if not steps.startswith("["):
+                steps = "[]"
+            kb._conn.execute(
+                """INSERT INTO runbooks
+                   (title, scenario_type, system_or_service, severity, steps,
+                    estimated_minutes, last_tested, owner, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["title"].strip(),
+                    row["scenario_type"].strip(),
+                    row.get("system_or_service", "").strip(),
+                    row.get("severity", "medium").strip(),
+                    steps,
+                    _parse_int(row.get("estimated_minutes", "0")),
+                    row.get("last_tested", "").strip(),
+                    row.get("owner", "").strip(),
+                    row.get("notes", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_on_call_schedules(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            kb._conn.execute(
+                """INSERT INTO on_call_schedules
+                   (team_name, service, primary_name, primary_slack_id, primary_phone,
+                    secondary_name, secondary_slack_id, secondary_phone,
+                    escalation_manager, escalation_phone, schedule_notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["team_name"].strip(),
+                    row["service"].strip(),
+                    row["primary_name"].strip(),
+                    row.get("primary_slack_id", "").strip(),
+                    row.get("primary_phone", "").strip(),
+                    row.get("secondary_name", "").strip(),
+                    row.get("secondary_slack_id", "").strip(),
+                    row.get("secondary_phone", "").strip(),
+                    row.get("escalation_manager", "").strip(),
+                    row.get("escalation_phone", "").strip(),
+                    row.get("schedule_notes", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_continuity_plans(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            actions = row.get("actions", "[]").strip()
+            if not actions.startswith("["):
+                actions = "[]"
+            critical = row.get("critical_functions", "[]").strip()
+            if not critical.startswith("["):
+                critical = "[]"
+            kb._conn.execute(
+                """INSERT INTO continuity_plans
+                   (scenario_type, plan_name, trigger_conditions, actions,
+                    remote_work_capable, backup_facility, critical_functions,
+                    recovery_time_objective_hours, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["scenario_type"].strip(),
+                    row["plan_name"].strip(),
+                    row.get("trigger_conditions", "").strip(),
+                    actions,
+                    int(_parse_bool(row.get("remote_work_capable", "false"))),
+                    row.get("backup_facility", "").strip(),
+                    critical,
+                    _parse_int(row.get("recovery_time_objective_hours", "0")),
+                    row.get("notes", "").strip(),
                 ),
             )
             kb._conn.commit()

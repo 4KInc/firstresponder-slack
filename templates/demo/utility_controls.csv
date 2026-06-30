@@ -1,0 +1,6 @@
+facility_id,utility_type,location_description,floor,zone_id,shutoff_instructions,requires_key,key_location
+jefferson,gas,Utility room behind cafeteria kitchen — yellow valve handle on main pipe,1,cafeteria,Turn yellow handle 90 degrees clockwise. Requires wrench (hanging on hook next to valve).,false,
+jefferson,electrical,Electrical panel room — east end of F1 hallway gray metal door,1,east-wing-f1,Main breaker is top-left switch (red handle). Flip DOWN to kill power to east wing.,true,Key on custodian Frank keyring or in main office lockbox
+jefferson,electrical,Electrical panel — west end of F1 hallway behind janitor closet,1,west-wing-f1,Main breaker is top-left switch. Flip DOWN to kill power to west wing.,true,Key on custodian Frank keyring or in main office lockbox
+jefferson,water,Water main shutoff — outside north side of building green cover in ground,1,,Lift green cover turn valve clockwise with water key (in custodian closet).,false,
+jefferson,fire_suppression,Sprinkler control — utility room behind cafeteria,1,cafeteria,Do NOT shut off unless fire department instructs. Red wheel valve.,false,
