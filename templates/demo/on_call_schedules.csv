@@ -1,0 +1,8 @@
+team_name,service,primary_name,primary_slack_id,primary_phone,secondary_name,secondary_slack_id,secondary_phone,escalation_manager,escalation_phone,schedule_notes
+IT Support,Network and Systems,Tech Jordan,U_TECH,615-555-0162,Mr. Scott,U_SCOTT,615-555-0130,Principal Johnson,615-555-0101,Tech Jordan is primary for all IT. Mr. Scott is backup (former IT career).
+Security,Physical Security,Security Dave,U_SECURITY,615-555-0160,Coach Williams,U_COACH,615-555-0154,Principal Johnson,615-555-0101,Security Dave 7am-4pm. Coach Williams covers after-hours events.
+Administration,School Operations,Principal Johnson,U_PRINCIPAL,615-555-0101,VP Martinez,U_VP,615-555-0103,Superintendent Dr. Harris,615-555-0200,Principal is first call. Superintendent for district-level incidents.
+Medical,Health and First Aid,Nurse Sarah,U_NURSE,615-555-0107,Ms. Garcia,U_GARCIA,615-555-0120,VP Martinez,615-555-0103,Nurse Sarah during school hours. Ms. Garcia is CPR/First Aid backup.
+Facilities,Building and Maintenance,Custodian Frank,U_FRANK,615-555-0156,Cafeteria Rosa,U_ROSA,615-555-0158,VP Martinez,615-555-0103,Frank knows all utility shutoffs and has master keys.
+Communications,Parent and Media,VP Martinez,U_VP,615-555-0103,Mrs. Evans,U_EVANS,615-555-0164,Principal Johnson,615-555-0101,VP manages SchoolMessenger. Evans handles crisis counseling communications.
+Cyber Insurance,Incident Response,Nashville Cyber Insurance,,615-555-0300,,,,,,"Policy #EDU-2026-4491. Must notify within 24 hours of suspected breach."
