@@ -37,7 +37,7 @@ class IngestResult:
 # Required columns for each CSV type
 SCHEMAS = {
     "facility": ["facility_id", "name"],
-    "zones": ["zone_id", "facility_id", "name", "floor"],
+    "zones": ["zone_id", "facility_id", "name", "floor", "zone_type"],
     "rooms": ["room_id", "facility_id", "name", "floor"],
     "personnel": ["person_id", "name"],
     "emergency_resources": ["facility_id", "resource_type", "location_description"],
@@ -66,10 +66,17 @@ def _parse_float(val: str, default: float = 0.0) -> float:
 
 
 def detect_csv_type(headers: list[str]) -> str | None:
-    """Detect the CSV type based on column headers."""
+    """Detect the CSV type based on column headers.
+
+    Matches most-specific schema first (most required columns) to avoid
+    false matches on generic columns like 'facility_id' and 'name'.
+    """
     headers_set = set(h.strip().lower() for h in headers)
 
-    for csv_type, required in SCHEMAS.items():
+    # Sort by number of required columns descending — most specific first
+    sorted_schemas = sorted(SCHEMAS.items(), key=lambda x: len(x[1]), reverse=True)
+
+    for csv_type, required in sorted_schemas:
         if all(col in headers_set for col in required):
             return csv_type
 
