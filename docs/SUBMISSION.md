@@ -170,10 +170,16 @@ crisis coordination for the organizations that need it most."
 
 ## 6. Architecture Diagram
 
-`docs/architecture.md` contains three Mermaid diagrams (system overview, crisis
-lifecycle sequence, three-layer model) plus the scenario matrix. For Devpost,
-export the **System Overview** as a PNG — paste the Mermaid block into
-https://mermaid.live and download, or use the VS Code Mermaid preview → export.
+**Ready to upload:** `docs/architecture.png` (2800×2828) — a polished,
+single-image system diagram covering the Slack surfaces, Bolt listeners, Claude
+Agent SDK core, all 32 tools, the two SQLite layers, scenario intelligence, the
+crisis lifecycle, and external services. Source is `docs/architecture.html`
+(re-render with Playwright: `python docs/../<render script>` — or just open the
+HTML and screenshot).
+
+`docs/architecture.md` additionally contains three Mermaid diagrams (system
+overview, crisis-lifecycle sequence, three-layer model) plus the scenario matrix,
+if you want an alternate/animated view.
 
 ---
 
