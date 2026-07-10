@@ -35,14 +35,19 @@ async def handle_app_mentioned(
             )
             return
 
-        await set_status(
-            status="Assessing situation...",
-            loading_messages=[
-                "Reviewing incident protocols...",
-                "Checking personnel status...",
-                "Analyzing the situation...",
-            ],
-        )
+        # set_status is an Assistant-thread API; it fails on a normal channel
+        # @mention. Best-effort so the mention still gets answered anywhere.
+        try:
+            await set_status(
+                status="Assessing situation...",
+                loading_messages=[
+                    "Reviewing incident protocols...",
+                    "Checking personnel status...",
+                    "Analyzing the situation...",
+                ],
+            )
+        except Exception:
+            pass
 
         existing_session_id = session_store.get_session(channel_id, thread_ts)
 
@@ -58,10 +63,21 @@ async def handle_app_mentioned(
             cleaned_text, session_id=existing_session_id, deps=deps
         )
 
-        streamer = await say_stream()
-        await streamer.append(markdown_text=response_text)
-        feedback_blocks = build_feedback_blocks()
-        await streamer.stop(blocks=feedback_blocks)
+        if not response_text.strip():
+            response_text = (
+                ":warning: I couldn't produce a response. Try rephrasing, or use "
+                "`/crisis help` for direct commands."
+            )
+
+        # Streaming (chat.startStream) is Assistant-thread only; fall back to a
+        # normal threaded message on a regular channel @mention.
+        try:
+            streamer = await say_stream()
+            await streamer.append(markdown_text=response_text)
+            feedback_blocks = build_feedback_blocks()
+            await streamer.stop(blocks=feedback_blocks)
+        except Exception:
+            await say(text=response_text, thread_ts=thread_ts)
 
         if new_session_id:
             session_store.set_session(channel_id, thread_ts, new_session_id)
