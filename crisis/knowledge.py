@@ -485,10 +485,15 @@ class KnowledgeBase:
         - Room join: also finds people whose default_location is a room belonging to matched zones
         """
         if zone_id:
-            # Find matching zones — exact match first, then partial (LIKE) match
+            # Partial match uses a '-' boundary so "east-wing" matches sub-zones
+            # like "east-wing-f1"/"east-wing-f2" but NOT "east-winger". A literal
+            # zone id still matches exactly via the "id = ?" clause.
+            zone_prefix = f"{zone_id}-%"
+
+            # Find matching zones — exact match first, then boundary-partial match
             matching_zones = [r["id"] for r in self._conn.execute(
                 "SELECT id FROM zones WHERE id = ? OR id LIKE ?",
-                (zone_id, f"{zone_id}%")
+                (zone_id, zone_prefix)
             ).fetchall()]
 
             if not matching_zones:
@@ -505,13 +510,15 @@ class KnowledgeBase:
             all_locations = matching_zones + room_ids
             loc_placeholders = ", ".join("?" for _ in all_locations)
 
-            # Also match personnel whose default_location starts with the zone prefix
+            # Match personnel by exact location OR zone-prefixed location. The
+            # location conditions are parenthesized so a floor filter (below)
+            # applies to the WHOLE set, not just the LIKE branch.
             query = (
                 f"SELECT * FROM personnel WHERE "
-                f"default_location IN ({loc_placeholders}) "
-                f"OR default_location LIKE ?"
+                f"(default_location IN ({loc_placeholders}) "
+                f"OR default_location = ? OR default_location LIKE ?)"
             )
-            params = all_locations + [f"{zone_id}%"]
+            params = all_locations + [zone_id, zone_prefix]
 
             if floor is not None:
                 query += " AND floor = ?"

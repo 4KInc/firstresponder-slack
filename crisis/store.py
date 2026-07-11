@@ -187,6 +187,106 @@ class IncidentStore:
         )
         conn.commit()
 
+    # --- Rehydration: rebuild in-memory state after a restart ---
+
+    def load_active_incidents(self) -> list[Crisis]:
+        """Reconstruct full Crisis objects for every non-resolved incident.
+
+        Used on startup so an app restart mid-incident doesn't orphan the
+        incident (which is on disk) from the in-memory manager. Each incident is
+        rebuilt with its check-ins, roster, timeline, and SITREPs. A row that
+        fails to parse is skipped rather than blocking startup.
+        """
+        conn = self._conn
+        rows = conn.execute(
+            "SELECT * FROM incidents WHERE status != 'resolved' ORDER BY created_at ASC"
+        ).fetchall()
+
+        crises: list[Crisis] = []
+        for row in rows:
+            try:
+                crisis = Crisis(
+                    id=row["id"],
+                    crisis_type=row["crisis_type"],
+                    description=row["description"],
+                    severity=CrisisSeverity(row["severity"]),
+                    status=CrisisStatus(row["status"]),
+                    channel_id=row["channel_id"],
+                    created_by=row["created_by"],
+                    created_at=datetime.fromisoformat(row["created_at"]),
+                    resolved_at=datetime.fromisoformat(row["resolved_at"]) if row["resolved_at"] else None,
+                    incident_commander=row["incident_commander"],
+                )
+
+                for cr in conn.execute(
+                    "SELECT user_id, status, note, timestamp FROM checkins WHERE incident_id = ?",
+                    (crisis.id,),
+                ).fetchall():
+                    crisis.check_ins[cr["user_id"]] = CheckIn(
+                        user_id=cr["user_id"],
+                        timestamp=datetime.fromisoformat(cr["timestamp"]),
+                        status=cr["status"],
+                        note=cr["note"] or "",
+                    )
+
+                crisis.team_roster = [
+                    r["user_id"]
+                    for r in conn.execute(
+                        "SELECT user_id FROM roster WHERE incident_id = ?", (crisis.id,)
+                    ).fetchall()
+                ]
+
+                crisis.timeline = [
+                    {
+                        "timestamp": e["timestamp"],
+                        "type": e["event_type"],
+                        "description": e["description"],
+                        "user_id": e["user_id"],
+                    }
+                    for e in conn.execute(
+                        "SELECT event_type, description, user_id, timestamp FROM timeline_events "
+                        "WHERE incident_id = ? ORDER BY id ASC",
+                        (crisis.id,),
+                    ).fetchall()
+                ]
+
+                # SITREP checked_in/missing lists aren't persisted; rebuild the
+                # objects so numbering (len + 1) continues correctly.
+                crisis.sitreps = [
+                    SitRep(
+                        number=s["number"],
+                        timestamp=datetime.fromisoformat(s["timestamp"]),
+                        summary=s["summary"],
+                        checked_in=[],
+                        missing=[],
+                        actions_taken=json.loads(s["actions_taken"] or "[]"),
+                    )
+                    for s in conn.execute(
+                        "SELECT number, summary, actions_taken, timestamp FROM sitreps "
+                        "WHERE incident_id = ? ORDER BY number ASC",
+                        (crisis.id,),
+                    ).fetchall()
+                ]
+
+                crises.append(crisis)
+            except Exception:
+                continue
+
+        return crises
+
+    def get_max_id_counter(self) -> int:
+        """Highest trailing counter (the NNN in INC-<ts>-NNN) across all ids.
+
+        Lets the manager resume its counter after a restart so freshly minted
+        ids can't collide with a same-second pre-restart id.
+        """
+        max_n = 0
+        for row in self._conn.execute("SELECT id FROM incidents").fetchall():
+            tail = row["id"].rsplit("-", 1)[-1]
+            if tail.isdigit():
+                max_n = max(max_n, int(tail))
+        return max_n
+
     # --- Query methods for the AI agent ---
 
     def get_past_incidents_by_type(self, crisis_type: str, limit: int = 10) -> list[dict]:

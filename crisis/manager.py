@@ -20,6 +20,20 @@ class CrisisManager:
         self._channel_map: dict[str, str] = {}  # channel_id -> crisis_id
         self._lock = threading.Lock()
         self._counter = 0
+        self._rehydrate()
+
+    def _rehydrate(self) -> None:
+        """Reload non-resolved incidents from SQLite so a restart mid-incident
+        doesn't orphan an active crisis from Slack (check-in/status/resolve).
+        Best-effort: a storage failure must never block startup."""
+        try:
+            for crisis in incident_store.load_active_incidents():
+                self._crises[crisis.id] = crisis
+                if crisis.channel_id:
+                    self._channel_map[crisis.channel_id] = crisis.id
+            self._counter = incident_store.get_max_id_counter()
+        except Exception:
+            pass
 
     def _next_id(self) -> str:
         self._counter += 1
@@ -71,6 +85,23 @@ class CrisisManager:
             if crisis_id:
                 return self._crises.get(crisis_id)
             return None
+
+    def reassign_channel(self, crisis_id: str, new_channel_id: str) -> bool:
+        """Point a crisis at a new (e.g. dedicated incident) channel.
+
+        Keeps ``_channel_map`` in sync so ``get_crisis_by_channel`` resolves the
+        crisis from the new channel. The original channel mapping is preserved so
+        coordination started in the source channel keeps working too.
+        """
+        with self._lock:
+            crisis = self._crises.get(crisis_id)
+            if not crisis:
+                return False
+            crisis.channel_id = new_channel_id
+            self._channel_map[new_channel_id] = crisis_id
+
+        incident_store.save_incident(crisis)
+        return True
 
     def get_active_crises(self) -> list[Crisis]:
         with self._lock:
