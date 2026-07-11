@@ -10,6 +10,7 @@ import json
 from claude_agent_sdk import tool
 
 from agent.context import agent_deps_var
+from agent.tools._people import person_label
 from crisis.knowledge import knowledge_base
 
 
@@ -73,7 +74,7 @@ async def get_evacuation_guidance_tool(args):
     if guidance["floor_wardens"]:
         lines.append(f"\n*Floor Wardens:*")
         for w in guidance["floor_wardens"]:
-            uid = f"<@{w['slack_user_id']}>" if w.get("slack_user_id") else w["name"]
+            uid = person_label(w.get("slack_user_id"), w.get("name"))
             lines.append(f"- {uid} — {w['default_location']}, Floor {w['floor']}")
 
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
@@ -151,7 +152,7 @@ async def lookup_person_tool(args):
     person = knowledge_base.get_personnel_by_slack_id(slack_user_id)
 
     if not person:
-        return {"content": [{"type": "text", "text": f"No personnel record found for <@{slack_user_id}>. They may not be in the directory."}]}
+        return {"content": [{"type": "text", "text": f"No personnel record found for {person_label(slack_user_id)}. They may not be in the directory."}]}
 
     lines = [
         f"*Personnel Record: {person['name']}*\n",
@@ -213,7 +214,7 @@ async def find_first_aid_responders_tool(args):
         if p.get("trained_cpr"):
             certs.append("CPR/AED")
 
-        uid = f"<@{p['slack_user_id']}>" if p.get("slack_user_id") else p["name"]
+        uid = person_label(p.get("slack_user_id"), p.get("name"))
         lines.append(f"- {uid} — {', '.join(certs)} — Location: {p.get('default_location', '?')}, Floor {p.get('floor', '?')}")
 
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
