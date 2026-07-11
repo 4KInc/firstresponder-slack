@@ -26,6 +26,7 @@ SYNTHETIC = {
 TEMPLATE_TYPES = [
     "facility", "zones", "rooms", "personnel", "emergency_resources",
     "evacuation_routes", "assembly_points", "nearby_services",
+    "drills", "vendor_contacts",
 ]
 
 

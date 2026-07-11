@@ -1,0 +1,6 @@
+vendor_name,service,contact_name,contact_phone,contact_email,escalation_procedure,sla_hours,notes
+Metro Managed IT,network,NOC Dispatch,615-555-7100,noc@metromanagedit.com,Call NOC line; if no answer in 15 min escalate to account manager Dana Reyes 615-555-7133,4,Manages core switch, firewall, and internet gateway
+SchoolSIS Cloud,sis-server,Support Tier 2,888-555-0142,support@schoolsis.example,Open P1 ticket in portal then call the priority hotline,2,Hosts student information system; 24x7 P1 support
+GuardianAlarm Security,security,Central Station,615-555-2200,dispatch@guardianalarm.example,Central station monitors alarms 24x7; verbal passcode required to cancel dispatch,1,Fire alarm, intrusion, and camera monitoring
+Volunteer State Electric,electrical,Outage Line,800-555-3300,,Report outage via automated line with account number; downed-line emergencies press 9,8,Utility power provider
+Harmony HVAC & Boiler,hvac,Emergency Service,615-555-4400,service@harmonyhvac.example,After-hours emergency service dispatch; boiler failures are priority,6,Heating, boiler, and gas appliance service

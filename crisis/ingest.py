@@ -48,6 +48,8 @@ SCHEMAS = {
     "nearby_services": ["service_type", "name"],
     "utility_controls": ["facility_id", "utility_type", "location_description"],
     "hazmat_locations": ["facility_id", "material_name", "hazard_class", "location_description"],
+    "drills": ["drill_type", "date", "total_evacuation_seconds"],
+    "vendor_contacts": ["vendor_name", "service"],
     # Cyber & operations
     "network_assets": ["asset_id", "name", "asset_type"],
     "data_inventory": ["data_id", "name", "data_classification", "storage_system"],
@@ -151,6 +153,8 @@ def ingest_csv(content: str, filename: str = "") -> IngestResult:
         "runbooks": _ingest_runbooks,
         "on_call_schedules": _ingest_on_call_schedules,
         "continuity_plans": _ingest_continuity_plans,
+        "drills": _ingest_drills,
+        "vendor_contacts": _ingest_vendor_contacts,
     }
 
     return parsers[csv_type](reader, csv_type)
@@ -574,6 +578,75 @@ def _ingest_continuity_plans(reader, csv_type) -> IngestResult:
                     row.get("backup_facility", "").strip(),
                     critical,
                     _parse_int(row.get("recovery_time_objective_hours", "0")),
+                    row.get("notes", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_drills(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            fid = row.get("facility_id", "").strip() or None
+            # upsert on (facility_id, drill_type, date) so re-uploading a drill
+            # log doesn't duplicate entries
+            kb._conn.execute(
+                "DELETE FROM drill_history WHERE facility_id IS ? AND drill_type = ? AND date = ?",
+                (fid, row["drill_type"].strip(), row["date"].strip()),
+            )
+            kb._conn.execute(
+                """INSERT INTO drill_history
+                   (facility_id, drill_type, date, total_evacuation_seconds,
+                    full_accountability_seconds, participants, slowest_zone, issues_noted, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    fid,
+                    row["drill_type"].strip(),
+                    row["date"].strip(),
+                    _parse_int(row.get("total_evacuation_seconds", "0")),
+                    _parse_int(row.get("full_accountability_seconds", "0")),
+                    _parse_int(row.get("participants", "0")),
+                    row.get("slowest_zone", "").strip(),
+                    row.get("issues_noted", "").strip(),
+                    row.get("notes", "").strip(),
+                ),
+            )
+            kb._conn.commit()
+            loaded += 1
+        except Exception as e:
+            errors.append(f"Row {i}: {e}")
+            skipped += 1
+    return IngestResult(csv_type, loaded, skipped, errors)
+
+
+def _ingest_vendor_contacts(reader, csv_type) -> IngestResult:
+    loaded, skipped, errors = 0, 0, []
+    for i, row in enumerate(reader, 2):
+        try:
+            # upsert on (vendor_name, service)
+            kb._conn.execute(
+                "DELETE FROM vendor_contacts WHERE vendor_name = ? AND service = ?",
+                (row["vendor_name"].strip(), row["service"].strip()),
+            )
+            kb._conn.execute(
+                """INSERT INTO vendor_contacts
+                   (vendor_name, service, contact_name, contact_phone, contact_email,
+                    escalation_procedure, sla_hours, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    row["vendor_name"].strip(),
+                    row["service"].strip(),
+                    row.get("contact_name", "").strip(),
+                    row.get("contact_phone", "").strip(),
+                    row.get("contact_email", "").strip(),
+                    row.get("escalation_procedure", "").strip(),
+                    _parse_int(row.get("sla_hours", "0")),
                     row.get("notes", "").strip(),
                 ),
             )
