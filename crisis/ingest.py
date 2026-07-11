@@ -75,6 +75,23 @@ def _parse_float(val: str, default: float = 0.0) -> float:
         return default
 
 
+def _clear_facility_scope(table: str, rows: list[dict]) -> None:
+    """Make re-upload idempotent for tables keyed only by an autoincrement id.
+
+    These tables (emergency_resources, evacuation_routes, utility_controls,
+    hazmat_locations) have no natural unique key, so a plain re-INSERT would
+    duplicate every row. Before loading, we delete the existing rows for the
+    facilities present in this upload — so re-uploading a corrected CSV replaces
+    that facility's rows instead of appending duplicates. ``table`` is a fixed,
+    code-supplied name (never user input), so interpolation here is safe.
+    """
+    fids = {r.get("facility_id", "").strip() for r in rows if r.get("facility_id", "").strip()}
+    for fid in fids:
+        kb._conn.execute(f"DELETE FROM {table} WHERE facility_id = ?", (fid,))
+    if fids:
+        kb._conn.commit()
+
+
 def detect_csv_type(headers: list[str]) -> str | None:
     """Detect the CSV type based on column headers.
 
@@ -232,7 +249,9 @@ def _ingest_personnel(reader, csv_type) -> IngestResult:
 
 def _ingest_emergency_resources(reader, csv_type) -> IngestResult:
     loaded, skipped, errors = 0, 0, []
-    for i, row in enumerate(reader, 2):
+    rows = list(reader)
+    _clear_facility_scope("emergency_resources", rows)
+    for i, row in enumerate(rows, 2):
         try:
             kb.add_emergency_resource(
                 row["facility_id"].strip(),
@@ -251,7 +270,9 @@ def _ingest_emergency_resources(reader, csv_type) -> IngestResult:
 
 def _ingest_evacuation_routes(reader, csv_type) -> IngestResult:
     loaded, skipped, errors = 0, 0, []
-    for i, row in enumerate(reader, 2):
+    rows = list(reader)
+    _clear_facility_scope("evacuation_routes", rows)
+    for i, row in enumerate(rows, 2):
         try:
             blocked = row.get("blocked_by_zones", "").strip()
             blocked_list = [z.strip() for z in blocked.split(",") if z.strip()] if blocked else []
@@ -300,6 +321,10 @@ def _ingest_nearby_services(reader, csv_type) -> IngestResult:
     for i, row in enumerate(reader, 2):
         try:
             kb._conn.execute(
+                "DELETE FROM nearby_services WHERE service_type = ? AND name = ?",
+                (row["service_type"].strip(), row["name"].strip()),
+            )
+            kb._conn.execute(
                 """INSERT INTO nearby_services
                    (service_type, name, address, phone, distance_miles, eta_minutes, trauma_level, helipad)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -324,7 +349,9 @@ def _ingest_nearby_services(reader, csv_type) -> IngestResult:
 
 def _ingest_utility_controls(reader, csv_type) -> IngestResult:
     loaded, skipped, errors = 0, 0, []
-    for i, row in enumerate(reader, 2):
+    rows = list(reader)
+    _clear_facility_scope("utility_controls", rows)
+    for i, row in enumerate(rows, 2):
         try:
             kb._conn.execute(
                 """INSERT INTO utility_controls
@@ -352,7 +379,9 @@ def _ingest_utility_controls(reader, csv_type) -> IngestResult:
 
 def _ingest_hazmat_locations(reader, csv_type) -> IngestResult:
     loaded, skipped, errors = 0, 0, []
-    for i, row in enumerate(reader, 2):
+    rows = list(reader)
+    _clear_facility_scope("hazmat_locations", rows)
+    for i, row in enumerate(rows, 2):
         try:
             kb._conn.execute(
                 """INSERT INTO hazmat_locations
@@ -452,6 +481,10 @@ def _ingest_runbooks(reader, csv_type) -> IngestResult:
             if not steps.startswith("["):
                 steps = "[]"
             kb._conn.execute(
+                "DELETE FROM runbooks WHERE title = ? AND scenario_type = ?",
+                (row["title"].strip(), row["scenario_type"].strip()),
+            )
+            kb._conn.execute(
                 """INSERT INTO runbooks
                    (title, scenario_type, system_or_service, severity, steps,
                     estimated_minutes, last_tested, owner, notes)
@@ -480,6 +513,10 @@ def _ingest_on_call_schedules(reader, csv_type) -> IngestResult:
     loaded, skipped, errors = 0, 0, []
     for i, row in enumerate(reader, 2):
         try:
+            kb._conn.execute(
+                "DELETE FROM on_call_schedules WHERE team_name = ? AND service = ?",
+                (row["team_name"].strip(), row["service"].strip()),
+            )
             kb._conn.execute(
                 """INSERT INTO on_call_schedules
                    (team_name, service, primary_name, primary_slack_id, primary_phone,
@@ -518,6 +555,10 @@ def _ingest_continuity_plans(reader, csv_type) -> IngestResult:
             critical = row.get("critical_functions", "[]").strip()
             if not critical.startswith("["):
                 critical = "[]"
+            kb._conn.execute(
+                "DELETE FROM continuity_plans WHERE scenario_type = ? AND plan_name = ?",
+                (row["scenario_type"].strip(), row["plan_name"].strip()),
+            )
             kb._conn.execute(
                 """INSERT INTO continuity_plans
                    (scenario_type, plan_name, trigger_conditions, actions,
