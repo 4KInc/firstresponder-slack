@@ -31,6 +31,18 @@ async def handle_file_shared(
         filetype = file_data.get("filetype", "")
         mimetype = file_data.get("mimetype", "")
 
+        # If the file was shared inside a thread, reply in that thread so the
+        # confirmation shows up where the user uploaded (not in the main channel).
+        thread_ts = None
+        shares = file_data.get("shares", {})
+        for visibility in ("public", "private"):
+            for share in shares.get(visibility, {}).get(channel_id, []):
+                if share.get("thread_ts"):
+                    thread_ts = share["thread_ts"]
+                    break
+            if thread_ts:
+                break
+
         # Only process CSV files
         if filetype != "csv" and not filename.endswith(".csv"):
             return
@@ -47,6 +59,7 @@ async def handle_file_shared(
                 if resp.status != 200:
                     await client.chat_postMessage(
                         channel=channel_id,
+                        thread_ts=thread_ts,
                         text=f":warning: Could not download file `{filename}`. Status: {resp.status}",
                     )
                     return
@@ -62,6 +75,7 @@ async def handle_file_shared(
 
             await client.chat_postMessage(
                 channel=channel_id,
+                thread_ts=thread_ts,
                 text=(
                     f":white_check_mark: *File `{filename}` loaded successfully!*\n\n"
                     f"{result.summary()}\n\n"
@@ -72,6 +86,7 @@ async def handle_file_shared(
         else:
             await client.chat_postMessage(
                 channel=channel_id,
+                thread_ts=thread_ts,
                 text=(
                     f":warning: *Could not load `{filename}`*\n\n"
                     f"{result.summary()}\n\n"
