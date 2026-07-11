@@ -8,6 +8,7 @@ import json
 
 from claude_agent_sdk import tool
 
+from agent.tools._people import person_label
 from crisis.knowledge import knowledge_base
 
 
@@ -152,13 +153,13 @@ async def get_on_call_tool(args):
     for s in schedules:
         lines.append(f"*{s['team_name']}* — {s['service']}")
 
-        primary_uid = f"<@{s['primary_slack_id']}>" if s.get("primary_slack_id") else s["primary_name"]
+        primary_uid = person_label(s.get("primary_slack_id"), s.get("primary_name"))
         lines.append(f"- Primary: {primary_uid}")
         if s.get("primary_phone"):
             lines.append(f"  Phone: {s['primary_phone']}")
 
         if s.get("secondary_name"):
-            secondary_uid = f"<@{s['secondary_slack_id']}>" if s.get("secondary_slack_id") else s["secondary_name"]
+            secondary_uid = person_label(s.get("secondary_slack_id"), s.get("secondary_name"))
             lines.append(f"- Secondary: {secondary_uid}")
             if s.get("secondary_phone"):
                 lines.append(f"  Phone: {s['secondary_phone']}")

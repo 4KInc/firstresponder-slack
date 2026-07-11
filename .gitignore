@@ -1,5 +1,8 @@
 .env
 .venv/
+# SQLite WAL sidecar files (transient runtime state)
+*.db-wal
+*.db-shm
 __pycache__/
 *.pyc
 *.pyo

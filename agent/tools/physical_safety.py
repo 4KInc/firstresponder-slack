@@ -8,6 +8,7 @@ import json
 
 from claude_agent_sdk import tool
 
+from agent.tools._people import person_label
 from crisis.knowledge import knowledge_base
 
 
@@ -221,7 +222,7 @@ async def get_people_in_danger_zone_tool(args):
     people.sort(key=lambda p: (-p.get("mobility_limitations", 0), p.get("name", "")))
 
     for p in people:
-        uid = f"<@{p['slack_user_id']}>" if p.get("slack_user_id") else p["name"]
+        uid = person_label(p.get("slack_user_id"), p.get("name"))
         lines.append(f"- {uid} — {p.get('role', 'N/A')} — Location: {p.get('default_location', '?')}")
         if p.get("phone"):
             lines.append(f"  Phone: {p['phone']}")
