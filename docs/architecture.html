@@ -1,0 +1,306 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root{
+    --paper:#f4f1e9;
+    --ink:#1b1a17;
+    --muted:#6d6b62;
+    --faint:#8a887e;
+    --green:#1c5b3e;
+    --red:#b23a34;
+    --amber:#a9790c;
+    --blue:#2c5a9e;
+    --aub:#5c2a60;
+    --line:#d9d4c6;
+    --sub:#ecebe2;
+    --mono:'SF Mono','Menlo','Consolas',monospace;
+    --sans:'Helvetica Neue','Arial',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--paper);}
+  #canvas{
+    width:1400px;
+    background:var(--paper);
+    font-family:var(--sans);
+    color:var(--ink);
+    padding:42px 48px 30px 48px;
+    position:relative;
+  }
+  /* ---------- header ---------- */
+  .kicker{font-size:12px;letter-spacing:4px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+  h1{font-size:40px;font-weight:800;letter-spacing:-.5px;line-height:1;margin-top:4px;}
+  .subtitle{font-size:16px;color:var(--muted);margin-top:8px;font-weight:400;}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
+  .header .badges{text-align:right;margin-top:6px;}
+  .badge{display:inline-block;font-size:11px;letter-spacing:1px;font-weight:700;text-transform:uppercase;
+    border:1px solid var(--line);border-radius:3px;padding:5px 9px;margin-left:6px;color:var(--muted);background:#fbfaf4;}
+  .badge.g{color:var(--green);border-color:#bcd3c6;}
+  .badge.r{color:var(--red);border-color:#e3c1bd;}
+  .badge.a{color:var(--amber);border-color:#e2d2a4;}
+
+  /* ---------- layout ---------- */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+  .sec{font-size:12px;letter-spacing:2.5px;font-weight:700;text-transform:uppercase;margin:0 0 12px 2px;}
+  .sec.g{color:var(--green);} .sec.r{color:var(--red);} .sec.a{color:var(--amber);}
+  .sec.b{color:var(--blue);} .sec.aub{color:var(--aub);}
+  .stack{margin-bottom:26px;}
+
+  /* cards */
+  .card{background:#fdfcf8;border:1px solid var(--line);border-top:3px solid var(--green);
+    border-radius:3px;padding:12px 14px;}
+  .card.aub{border-top-color:var(--aub);}
+  .card.red{border-top-color:var(--red);}
+  .card.amber{border-top-color:var(--amber);}
+  .card.blue{border-top-color:var(--blue);}
+  .card h3{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+  .card p{font-size:12px;color:var(--muted);line-height:1.5;}
+  .card .mono{font-family:var(--mono);font-size:11px;color:#55534b;line-height:1.55;}
+
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+
+  /* container panel with inner subcards */
+  .panel{border:1px solid;border-radius:4px;padding:16px;background:#fbfaf3;}
+  .panel.green{border-color:#9dc0ac;}
+  .panel.red{border-color:#dcb3ae;}
+  .panel.amber{border-color:#ddca97;}
+  .panel .plabel{font-size:12px;letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:12px;}
+  .panel.green .plabel{color:var(--green);}
+  .panel.red .plabel{color:var(--red);}
+  .panel.amber .plabel{color:var(--amber);}
+  .sub{background:var(--sub);border-radius:3px;padding:10px 12px;}
+  .sub h4{font-size:12.5px;font-weight:700;color:#3f3d36;margin-bottom:3px;}
+  .sub .mono{font-family:var(--mono);font-size:10.5px;color:#5c5a51;line-height:1.5;}
+  .sub p{font-size:11px;color:var(--muted);line-height:1.45;}
+
+  /* connectors */
+  .arrow{display:flex;flex-direction:column;align-items:center;margin:9px 0;}
+  .arrow .lbl{font-size:10.5px;letter-spacing:1px;color:var(--faint);text-transform:uppercase;margin-bottom:3px;}
+  .arrow .line{width:2px;height:16px;background:#b9b4a6;}
+  .arrow .head{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #b9b4a6;}
+  .arrow.red .line{background:var(--red);} .arrow.red .head{border-top-color:var(--red);}
+
+  /* callouts */
+  .callout{border-radius:3px;padding:11px 14px;color:#fff;}
+  .callout.green{background:var(--green);}
+  .callout.red{background:var(--red);}
+  .callout .big{font-size:14px;font-weight:700;}
+  .callout .small{font-size:11px;opacity:.9;margin-top:2px;}
+
+  /* tool group */
+  .tool{background:var(--sub);border-radius:3px;padding:9px 10px;border-left:3px solid var(--green);}
+  .tool .th{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;}
+  .tool .tn{font-size:12px;font-weight:700;color:#3f3d36;}
+  .tool .cnt{font-size:11px;font-weight:700;color:var(--green);}
+  .tool .mono{font-family:var(--mono);font-size:9.7px;color:#66645b;line-height:1.5;}
+  .tool.r{border-left-color:var(--red);} .tool.r .cnt{color:var(--red);}
+  .tool.a{border-left-color:var(--amber);} .tool.a .cnt{color:var(--amber);}
+  .tool.b{border-left-color:var(--blue);} .tool.b .cnt{color:var(--blue);}
+  .tool.aub{border-left-color:var(--aub);} .tool.aub .cnt{color:var(--aub);}
+
+  /* matrix */
+  table.mx{border-collapse:collapse;width:100%;font-size:11px;}
+  table.mx th,table.mx td{text-align:left;padding:5px 7px;border-bottom:1px solid #e4e0d3;vertical-align:top;}
+  table.mx th{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);font-weight:700;border-bottom:1.5px solid #cfc9ba;}
+  table.mx td.k{font-weight:700;color:#3f3d36;white-space:nowrap;}
+  table.mx td.v{color:var(--muted);font-family:var(--mono);font-size:10px;line-height:1.5;}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+
+  .flow{font-size:12px;color:#45433c;line-height:1.7;}
+  .flow b{color:var(--ink);}
+  .flow .step{font-family:var(--mono);font-size:10.5px;color:var(--green);font-weight:700;}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px;}
+  .kpi{border:1px solid var(--line);border-radius:3px;padding:10px 12px;background:#fdfcf8;text-align:center;}
+  .kpi .n{font-size:22px;font-weight:800;color:var(--ink);line-height:1;}
+  .kpi .l{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);margin-top:5px;}
+
+  /* footer */
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:30px;padding-top:14px;border-top:1px solid var(--line);}
+  .foot .stack-txt{font-size:12px;color:var(--muted);}
+  .foot .brand{font-size:13px;font-weight:700;color:var(--red);letter-spacing:.5px;}
+  .disc{font-size:10.5px;color:var(--faint);margin-top:4px;font-style:italic;}
+</style>
+</head>
+<body>
+<div id="canvas">
+
+  <div class="header">
+    <div>
+      <div class="kicker">System Architecture</div>
+      <h1>FirstResponder</h1>
+      <div class="subtitle">Crisis &amp; incident coordination agent for Slack — built on the Claude Agent SDK</div>
+    </div>
+    <div class="badges">
+      <span class="badge g">Slack AI</span>
+      <span class="badge a">MCP Server</span>
+      <span class="badge r">Real-Time Search</span>
+      <br>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted);">Track: <b style="color:var(--green)">Slack Agent for Good</b></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <!-- ================= LEFT COLUMN ================= -->
+    <div>
+      <!-- Slack surfaces -->
+      <div class="stack">
+        <div class="sec aub">Slack Surfaces</div>
+        <div class="grid4">
+          <div class="card aub"><h3>/crisis</h3><p>Slash command: start · status · checkin · resolve · playbook · setup</p></div>
+          <div class="card aub"><h3>@FirstResponder</h3><p>Mention &amp; DM the AI agent in any channel or thread</p></div>
+          <div class="card aub"><h3>Emoji Check‑ins</h3><p>✅ safe · 🆘 help · 🚑 injured · 🚪 evacuated</p></div>
+          <div class="card aub"><h3>Assistant · Home</h3><p>Assistant view, suggested prompts, App Home tab</p></div>
+        </div>
+      </div>
+
+      <div class="arrow"><div class="lbl">events · socket mode</div><div class="line"></div><div class="head"></div></div>
+
+      <!-- Bolt listeners -->
+      <div class="stack">
+        <div class="sec g">Bolt for Python — Socket Mode</div>
+        <div class="panel green">
+          <div class="grid3">
+            <div class="sub"><h4>Slash Handler</h4><div class="mono">slash_crisis.py</div></div>
+            <div class="sub"><h4>Message · Mention</h4><div class="mono">message · app_mentioned</div></div>
+            <div class="sub"><h4>Reaction Handler</h4><div class="mono">reaction_added</div></div>
+            <div class="sub"><h4>Assistant Thread</h4><div class="mono">suggested prompts</div></div>
+            <div class="sub"><h4>App Home</h4><div class="mono">app_home_opened</div></div>
+            <div class="sub"><h4>Feedback Actions</h4><div class="mono">👍 👎 block actions</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow"><div class="lbl">run_agent(text, session, deps)</div><div class="line"></div><div class="head"></div></div>
+
+      <!-- Agent core -->
+      <div class="stack">
+        <div class="sec r">Claude Agent SDK — Agent Core</div>
+        <div class="panel red">
+          <div class="grid2">
+            <div class="sub"><h4>System Prompt</h4><p>Incident‑commander persona + 10 scenario‑specific response protocols</p></div>
+            <div class="sub"><h4>SDK‑MCP Tool Server</h4><p>32 typed tools exposed over in‑process JSON‑RPC</p></div>
+            <div class="sub"><h4>Session Manager</h4><p>Per‑thread memory, resumes conversation by session id</p></div>
+            <div class="sub"><h4>Streaming Responses</h4><p>Token streaming with graceful non‑assistant fallback</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow"><div class="lbl">tool calls</div><div class="line"></div><div class="head"></div></div>
+
+      <!-- 32 tools -->
+      <div class="stack">
+        <div class="sec g">32 Agent Tools · 5 modules</div>
+        <div class="grid2">
+          <div class="tool r"><div class="th"><span class="tn">Crisis Management</span><span class="cnt">10</span></div>
+            <div class="mono">start_crisis · check_in · crisis_status · resolve_crisis · generate_sitrep · get_playbook · create_incident_channel · assign_ic · after_action · add_emoji_reaction</div></div>
+          <div class="tool a"><div class="th"><span class="tn">Intelligence &amp; Learning</span><span class="cnt">5</span></div>
+            <div class="mono">search_past_incidents · get_incident_intelligence · add_lesson_learned · get_organization_stats · get_missing_checkin_report</div></div>
+          <div class="tool"><div class="th"><span class="tn">Knowledge — General</span><span class="cnt">8</span></div>
+            <div class="mono">get_evacuation_guidance · find_emergency_resources · lookup_person · find_first_aid_responders · get_blast_radius · get_vendor_contacts · get_drill_performance · get_knowledge_summary</div></div>
+          <div class="tool"><div class="th"><span class="tn">Physical Safety</span><span class="cnt">5</span></div>
+            <div class="mono">get_utility_controls · get_assembly_points · get_hazmat_info · get_nearest_emergency_services · get_people_in_danger_zone</div></div>
+          <div class="tool b" style="grid-column:span 2"><div class="th"><span class="tn">Cyber &amp; Operations</span><span class="cnt">4</span></div>
+            <div class="mono">get_data_at_risk · get_runbook · get_on_call · get_continuity_plan</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= RIGHT COLUMN ================= -->
+    <div>
+      <!-- persistence -->
+      <div class="stack">
+        <div class="sec a">Persistence — SQLite · Zero Infrastructure</div>
+        <div class="grid2">
+          <div class="panel amber" style="padding:13px">
+            <div class="plabel" style="color:var(--amber)">Layer 2 · Learning Engine</div>
+            <div class="mono" style="font-family:var(--mono);font-size:11px;color:#5c5a51;line-height:1.9">
+              incidents · checkins · roster<br>
+              timeline_events · sitreps<br>
+              lessons_learned
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5">Every incident persists. Lessons from incident <b>N</b> surface during <b>N+1</b>; after‑action reports compare to historical average.</p>
+          </div>
+          <div class="panel green" style="padding:13px">
+            <div class="plabel" style="color:var(--green)">Layer 3 · Knowledge Base</div>
+            <div class="mono" style="font-family:var(--mono);font-size:11px;color:#5c5a51;line-height:1.9">
+              facilities · zones · rooms<br>
+              personnel · evac_routes<br>
+              resources · hazmat · utilities<br>
+              services · runbooks · on_call<br>
+              network · data_inventory · drills
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5">Turns generic advice into “Mrs. Davis, Room 104, wheelchair — nearest AED Hallway B.”</p>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:11px;color:var(--faint);margin-top:7px;letter-spacing:1px;">▲  READ / WRITE FROM THE 32 TOOLS  ▲</div>
+      </div>
+
+      <!-- scenario intelligence -->
+      <div class="stack">
+        <div class="sec a">Scenario Intelligence — Auto‑Queried Context</div>
+        <div class="panel amber" style="padding:6px 14px 10px">
+          <table class="mx">
+            <tr><th>Crisis</th><th>Agent automatically pulls</th></tr>
+            <tr><td class="k"><span class="dot" style="background:var(--red)"></span>Fire</td><td class="v">gas shutoff · hazmat near fire · safe vs blocked routes · assembly · danger zone · fire‑dept ETA · drill benchmark</td></tr>
+            <tr><td class="k"><span class="dot" style="background:var(--red)"></span>Active Threat</td><td class="v">people in danger zone · routes away from threat · police ETA · person lookup · safe rally point</td></tr>
+            <tr><td class="k"><span class="dot" style="background:var(--amber)"></span>Earthquake</td><td class="v">all utility shutoffs · hazmat rupture risk · mobility‑limited staff · hospital ETA · continuity plan</td></tr>
+            <tr><td class="k"><span class="dot" style="background:var(--green)"></span>Medical</td><td class="v">nearest CPR/AED responder · AED location · patient medical notes · trauma‑level hospital</td></tr>
+            <tr><td class="k"><span class="dot" style="background:var(--blue)"></span>Cyber / Breach</td><td class="v">blast radius · data at risk (PII + records) · GDPR 72h / HIPAA 60d · security &amp; legal on‑call · runbook</td></tr>
+            <tr><td class="k"><span class="dot" style="background:var(--blue)"></span>Outage</td><td class="v">dependency blast radius · on‑call engineer · system runbook · vendor SLA · continuity plan</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- lifecycle -->
+      <div class="stack">
+        <div class="sec g">Crisis Lifecycle</div>
+        <div class="panel green" style="padding:14px">
+          <div class="flow">
+            <span class="step">1 DECLARE</span> &nbsp;<b>/crisis start fire …</b> → playbook posted, roster seeded from channel members, past‑incident intelligence surfaced<br>
+            <span class="step">2 ACCOUNT</span> &nbsp;emoji / <b>checkin</b> → live safe / missing tracking, time‑based escalation<br>
+            <span class="step">3 SITREP</span> &nbsp;agent reads the channel via <b>Slack MCP</b> → situation report<br>
+            <span class="step">4 RESOLVE</span> &nbsp;after‑action report + historical comparison → <b>lesson learned</b> stored
+          </div>
+        </div>
+      </div>
+
+      <!-- external + callout -->
+      <div class="stack">
+        <div class="sec b">External Services</div>
+        <div class="grid2">
+          <div class="card blue"><h3>Slack MCP Server</h3><p class="mono" style="font-family:var(--mono);font-size:10.5px">mcp.slack.com — channel search via <b>Real‑Time Search API</b> for grounded SITREPs</p></div>
+          <div class="card blue"><h3>Anthropic API</h3><p class="mono" style="font-family:var(--mono);font-size:10.5px">Claude — agent reasoning, tool orchestration, streaming</p></div>
+        </div>
+        <div class="grid2" style="margin-top:12px">
+          <div class="callout green"><div class="big">$0 / user · &lt; 60s to coordinate</div><div class="small">vs. $9–21/user·mo for PagerDuty / Opsgenie</div></div>
+          <div class="callout red"><div class="big">10 crisis types · learns every incident</div><div class="small">physical + cyber, all inside Slack</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">32</div><div class="l">Agent Tools</div></div>
+    <div class="kpi"><div class="n">10</div><div class="l">Crisis Playbooks</div></div>
+    <div class="kpi"><div class="n">2</div><div class="l">SQLite Layers</div></div>
+    <div class="kpi"><div class="n">3</div><div class="l">Slack Technologies</div></div>
+  </div>
+
+  <div class="foot">
+    <div>
+      <div class="stack-txt">Bolt for Python · Claude Agent SDK · Slack MCP Server · Real‑Time Search API · SQLite · Socket Mode · Python 3.12</div>
+      <div class="disc">Not a replacement for 911 — coordinates organizational response alongside professional emergency services.</div>
+    </div>
+    <div class="brand">FirstResponder</div>
+  </div>
+
+</div>
+<script>
+  window.__ready = true;
+</script>
+</body>
+</html>

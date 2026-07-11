@@ -73,7 +73,10 @@ async def handle_reaction_added(
                 if len(missing) > 5:
                     msg += f" and {len(missing) - 5} more"
 
-            await client.chat_postMessage(channel=channel_id, text=msg)
+            # Post to the crisis's own channel, not necessarily where the
+            # reaction was added (they differ when we fell back to an active
+            # crisis in another channel).
+            await client.chat_postMessage(channel=crisis.channel_id, text=msg)
 
     except Exception as e:
         logger.exception(f"Failed to handle reaction: {e}")

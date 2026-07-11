@@ -1,3 +1,4 @@
+import os
 from logging import Logger
 
 from slack_bolt.context.async_context import AsyncBoltContext
@@ -25,6 +26,12 @@ async def handle_message(
     if event.get("bot_id"):
         return
 
+    # If this message @mentions the bot, the app_mention listener handles it.
+    # Skip here to avoid a double agent run + double reply in a live thread.
+    bot_user_id = context.bot_user_id
+    if bot_user_id and f"<@{bot_user_id}>" in event.get("text", ""):
+        return
+
     is_dm = event.get("channel_type") == "im"
     is_thread_reply = event.get("thread_ts") is not None
 
@@ -44,15 +51,20 @@ async def handle_message(
 
         existing_session_id = session_store.get_session(channel_id, thread_ts)
 
-        await set_status(
-            status="Assessing situation...",
-            loading_messages=[
-                "Reviewing incident protocols...",
-                "Checking personnel status...",
-                "Analyzing the situation...",
-                "Preparing response...",
-            ],
-        )
+        # set_status is an Assistant-thread API; best-effort so channel/thread
+        # replies still get answered.
+        try:
+            await set_status(
+                status="Assessing situation...",
+                loading_messages=[
+                    "Reviewing incident protocols...",
+                    "Checking personnel status...",
+                    "Analyzing the situation...",
+                    "Preparing response...",
+                ],
+            )
+        except Exception:
+            pass
 
         deps = AgentDeps(
             client=client,
@@ -60,16 +72,26 @@ async def handle_message(
             channel_id=channel_id,
             thread_ts=thread_ts,
             message_ts=event["ts"],
-            user_token=context.user_token,
+            user_token=context.user_token or os.environ.get("SLACK_USER_TOKEN"),
         )
         response_text, new_session_id = await run_agent(
             text, session_id=existing_session_id, deps=deps
         )
 
-        streamer = await say_stream()
-        await streamer.append(markdown_text=response_text)
-        feedback_blocks = build_feedback_blocks()
-        await streamer.stop(blocks=feedback_blocks)
+        if not response_text.strip():
+            response_text = (
+                ":warning: I couldn't produce a response. Try rephrasing, or use "
+                "`/crisis help` for direct commands."
+            )
+
+        # Streaming is Assistant-thread only; fall back to a normal message.
+        try:
+            streamer = await say_stream()
+            await streamer.append(markdown_text=response_text)
+            feedback_blocks = build_feedback_blocks()
+            await streamer.stop(blocks=feedback_blocks)
+        except Exception:
+            await say(text=response_text, thread_ts=thread_ts)
 
         if new_session_id:
             session_store.set_session(channel_id, thread_ts, new_session_id)

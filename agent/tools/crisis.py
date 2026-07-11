@@ -51,6 +51,10 @@ async def start_crisis_tool(args):
         severity=severity,
     )
 
+    # Seed the roster with the channel's members so "who's missing?" works.
+    from agent.roster import seed_roster_from_channel
+    await seed_roster_from_channel(deps.client, crisis.id, deps.channel_id)
+
     crisis_info = CRISIS_TYPES.get(crisis_type, CRISIS_TYPES["other"])
     playbook_text = format_playbook_message(crisis_type)
 
@@ -216,8 +220,9 @@ async def create_incident_channel_tool(args):
         )
         new_channel_id = result["channel"]["id"]
 
-        # Update the crisis with the new channel
-        crisis.channel_id = new_channel_id
+        # Update the crisis with the new channel AND keep the channel->crisis map
+        # in sync so check-ins/status/SITREPs work from the new incident channel.
+        crisis_manager.reassign_channel(crisis.id, new_channel_id)
         crisis.add_timeline_event("channel_created", f"Incident channel <#{new_channel_id}> created", deps.user_id)
 
         crisis_info = CRISIS_TYPES.get(crisis.crisis_type, CRISIS_TYPES["other"])

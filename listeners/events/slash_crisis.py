@@ -145,6 +145,10 @@ async def _handle_start(client, channel_id, user_id, parts):
         created_by=user_id,
     )
 
+    # Seed the roster with this channel's members so "who's missing?" works.
+    from agent.roster import seed_roster_from_channel
+    await seed_roster_from_channel(client, crisis.id, channel_id)
+
     crisis_info = CRISIS_TYPES[crisis_type]
     playbook_text = format_playbook_message(crisis_type)
 
@@ -240,7 +244,7 @@ async def _handle_checkin(client, channel_id, user_id, parts):
     if checkin:
         status_emoji = {"safe": ":white_check_mark:", "injured": ":ambulance:", "evacuated": ":door:", "need-help": ":sos:"}
         await client.chat_postMessage(
-            channel=channel_id,
+            channel=crisis.channel_id,
             text=f"{status_emoji.get(status, ':white_check_mark:')} <@{user_id}> checked in as *{status}* ({len(crisis.check_ins)}/{len(crisis.team_roster)})",
         )
 
@@ -259,10 +263,16 @@ async def _handle_resolve(client, channel_id, user_id):
             return
 
     resolved = crisis_manager.resolve_crisis(crisis.id, user_id)
-    report = crisis_manager.generate_after_action_report(crisis.id)
+    if not resolved:
+        await client.chat_postEphemeral(
+            channel=channel_id, user=user_id,
+            text=":warning: That crisis was already resolved.",
+        )
+        return
+    report = crisis_manager.generate_after_action_report(crisis.id) or "_(report unavailable)_"
 
     await client.chat_postMessage(
-        channel=channel_id,
+        channel=resolved.channel_id,
         text=(
             f":heavy_check_mark: *Crisis {resolved.id} RESOLVED*\n\n"
             f"*Duration:* {resolved.duration_minutes} minutes\n"
