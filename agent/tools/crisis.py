@@ -193,19 +193,27 @@ a dedicated coordination space.
         "properties": {
             "crisis_id": {
                 "type": "string",
-                "description": "The incident ID to create a channel for.",
+                "description": "The incident ID. If omitted, the active crisis in the current channel is used.",
             },
         },
-        "required": ["crisis_id"],
     },
 )
 async def create_incident_channel_tool(args):
     deps = agent_deps_var.get()
-    crisis_id = args["crisis_id"]
-    crisis = crisis_manager.get_crisis(crisis_id)
+    crisis_id = args.get("crisis_id")
+
+    # Fall back to the active crisis in this channel (or any active crisis), so
+    # "open an incident channel" works without the agent needing to know the ID.
+    if crisis_id:
+        crisis = crisis_manager.get_crisis(crisis_id)
+    else:
+        crisis = crisis_manager.get_crisis_by_channel(deps.channel_id)
+        if not crisis:
+            active = crisis_manager.get_active_crises()
+            crisis = active[0] if active else None
 
     if not crisis:
-        return {"content": [{"type": "text", "text": f"Crisis {crisis_id} not found."}]}
+        return {"content": [{"type": "text", "text": "No active crisis to create a channel for. Start a crisis first with `/crisis start` or by declaring one."}]}
 
     from datetime import datetime, timezone
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M")
@@ -275,16 +283,22 @@ async def create_incident_channel_tool(args):
                 "description": "The Slack user ID to assign as IC (e.g., U01ABCDEF).",
             },
         },
-        "required": ["crisis_id", "user_id"],
+        "required": ["user_id"],
     },
 )
 async def assign_incident_commander_tool(args):
-    crisis_id = args["crisis_id"]
+    deps = agent_deps_var.get()
+    crisis_id = args.get("crisis_id")
     user_id = args["user_id"]
 
-    success = crisis_manager.set_incident_commander(crisis_id, user_id)
+    if not crisis_id:
+        crisis = crisis_manager.get_crisis_by_channel(deps.channel_id)
+        if crisis:
+            crisis_id = crisis.id
+
+    success = crisis_manager.set_incident_commander(crisis_id, user_id) if crisis_id else False
     if not success:
-        return {"content": [{"type": "text", "text": f"Crisis {crisis_id} not found."}]}
+        return {"content": [{"type": "text", "text": "No active crisis to assign an IC to. Start a crisis first."}]}
 
     return {
         "content": [
@@ -304,17 +318,22 @@ async def assign_incident_commander_tool(args):
         "properties": {
             "crisis_id": {
                 "type": "string",
-                "description": "The incident ID to generate the report for.",
+                "description": "The incident ID. If omitted, the active crisis in the current channel is used.",
             },
         },
-        "required": ["crisis_id"],
     },
 )
 async def generate_after_action_report_tool(args):
-    crisis_id = args["crisis_id"]
-    report = crisis_manager.generate_after_action_report(crisis_id)
+    deps = agent_deps_var.get()
+    crisis_id = args.get("crisis_id")
 
+    if not crisis_id:
+        crisis = crisis_manager.get_crisis_by_channel(deps.channel_id)
+        if crisis:
+            crisis_id = crisis.id
+
+    report = crisis_manager.generate_after_action_report(crisis_id) if crisis_id else None
     if not report:
-        return {"content": [{"type": "text", "text": f"Crisis {crisis_id} not found."}]}
+        return {"content": [{"type": "text", "text": "No crisis found to report on. Start or reference a crisis first."}]}
 
     return {"content": [{"type": "text", "text": report}]}
