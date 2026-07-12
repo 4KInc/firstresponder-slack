@@ -73,6 +73,7 @@ async def handle_message(
             thread_ts=thread_ts,
             message_ts=event["ts"],
             user_token=context.user_token or os.environ.get("SLACK_USER_TOKEN"),
+            team_id=context.team_id,
         )
         response_text, new_session_id = await run_agent(
             text, session_id=existing_session_id, deps=deps
