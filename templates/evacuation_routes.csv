@@ -1,4 +1,4 @@
 facility_id,name,from_zone,to_exit,route_description,accessibility,blocked_by_zones
-main-building,East Wing F1 Primary,east-wing-f1,Door 3 (East Exit),East hallway to Door 3 parking lot,standard,east-entrance
+main-building,East Wing F1 Primary,east-wing-f1,Door 3 (East Exit),East hallway to Door 3 parking lot,standard,"east-entrance,east-wing,east-wing-f1"
 main-building,East Wing F1 Alternate,east-wing-f1,Door 7 (Gym Exit),East hallway through gym corridor to Door 7 athletic field,standard,
 main-building,West Wing F1 Primary,west-wing-f1,Door 1 (West Exit),West hallway to Door 1 staff parking lot,standard,
