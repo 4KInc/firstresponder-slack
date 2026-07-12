@@ -214,10 +214,12 @@ async def create_incident_channel_tool(args):
     channel_name = channel_name.lower().replace(" ", "-")[:80]
 
     try:
-        result = await deps.client.conversations_create(
-            name=channel_name,
-            is_private=False,
-        )
+        create_kwargs = {"name": channel_name, "is_private": False}
+        # Enterprise-grid (org) installs require an explicit team_id on
+        # conversations.create; single-workspace installs must NOT send it.
+        if deps.team_id:
+            create_kwargs["team_id"] = deps.team_id
+        result = await deps.client.conversations_create(**create_kwargs)
         new_channel_id = result["channel"]["id"]
 
         # Update the crisis with the new channel AND keep the channel->crisis map
