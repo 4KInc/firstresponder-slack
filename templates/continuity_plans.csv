@@ -1,0 +1,3 @@
+scenario_type,plan_name,trigger_conditions,actions,remote_work_capable,backup_facility,critical_functions,recovery_time_objective_hours,notes
+outage,Extended IT Outage,SIS or network down more than 4 hours,"[""Switch to paper attendance"",""Phone tree for parents"",""Escalate to vendor""]",false,District office,"[""Attendance"",""Parent communication""]",8,
+weather,Severe Weather Closure,Tornado warning or heavy snow,"[""Shelter in place or early dismissal"",""Activate parent notification"",""Coordinate buses""]",true,,"[""Student safety"",""Communication""]",4,

@@ -26,6 +26,7 @@ SYNTHETIC = {
 TEMPLATE_TYPES = [
     "facility", "zones", "rooms", "personnel", "emergency_resources",
     "evacuation_routes", "assembly_points", "nearby_services",
+    "drills", "vendor_contacts",
 ]
 
 
@@ -70,6 +71,29 @@ def test_reupload_is_idempotent_no_duplicates():
     second = {k: v for k, v in ing.kb.get_facility_summary().items() if v}
 
     assert first == second, f"re-upload changed counts: {first} -> {second}"
+
+
+def test_excel_bom_is_stripped():
+    # Excel / Google Sheets prepend a UTF-8 BOM on export; it must not break detection.
+    content = "﻿" + "facility_id,name,address,floors,capacity\nHILL,Hillcrest,1 Oak St,2,250\n"
+    result = ing.ingest_csv(content, "facility.csv")
+    assert result.file_type == "facility"
+    assert result.success and result.rows_loaded == 1
+
+
+def test_crlf_and_quoted_commas():
+    # Windows/Excel CRLF line endings and quoted fields containing commas.
+    content = 'facility_id,name,address,floors,capacity\r\nH2,"Hillcrest, North","1 Oak St, Suite 5",2,250\r\n'
+    result = ing.ingest_csv(content, "facility.csv")
+    assert result.file_type == "facility" and result.rows_loaded == 1
+
+
+def test_every_uploadable_type_has_a_template():
+    # Onboarding is self-serve only if each ingest type ships a downloadable template.
+    import crisis.ingest as _ing
+    have = {p.stem for p in TEMPLATES.glob("*.csv")}
+    missing = [t for t in _ing.SCHEMAS if t not in have]
+    assert not missing, f"uploadable types without a template: {missing}"
 
 
 def test_unknown_headers_fail_gracefully():
