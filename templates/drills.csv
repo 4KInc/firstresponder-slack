@@ -1,0 +1,5 @@
+facility_id,drill_type,date,total_evacuation_seconds,full_accountability_seconds,participants,slowest_zone,issues_noted,notes
+jefferson,fire,2026-05-15,272,310,418,east-wing-f2,Room 204 (Mrs. Davis) took 1:45 due to elevator wait. East stairwell bottleneck at F2.,Best fire evac time this year
+jefferson,fire,2026-03-10,296,340,415,library,Library students initially went wrong direction. Need clearer signage.,
+jefferson,active-threat,2026-04-22,45,180,430,cafeteria,Lockdown achieved in 45 sec. Full accountability took 3 min. Cafeteria doors need auto-lock retrofit.,Lockdown drill
+jefferson,earthquake,2026-02-05,0,420,410,east-wing-f1,Drop/cover/hold compliance good. Post-shaking evacuation took 7 min. Need utility shutoff training.,No evacuation during shaking

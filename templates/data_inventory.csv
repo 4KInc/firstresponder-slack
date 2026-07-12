@@ -1,0 +1,2 @@
+data_id,name,data_classification,storage_system,record_count,pii_fields,regulatory_frameworks,backup_location,backup_frequency,retention_policy,data_owner,notification_requirements,notes
+student-records,Student Records,confidential,sis-server,1200,"[""name"",""dob"",""address""]","[""FERPA""]",Backup server,daily,7 years,Registrar,FERPA notification within 72h,Includes special-education records

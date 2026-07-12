@@ -1,0 +1,3 @@
+title,scenario_type,system_or_service,severity,steps,estimated_minutes,last_tested,owner,notes
+Ransomware Isolation,cyberattack,All systems,critical,"[""Disconnect affected machines"",""Preserve evidence"",""Notify IR team"",""Restore from clean backup""]",120,2026-04-01,IT Director,
+SIS Outage Recovery,outage,sis-server,high,"[""Verify core switch"",""Restart SIS service"",""Failover to backup"",""Notify staff""]",45,2026-05-10,IT Director,
