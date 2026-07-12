@@ -117,13 +117,18 @@ def ingest_csv(content: str, filename: str = "") -> IngestResult:
 
     Auto-detects the CSV type from column headers.
     """
+    # Strip a UTF-8 BOM — Excel and Google Sheets prepend one on export, which
+    # would otherwise corrupt the first header (e.g. "﻿facility_id") and
+    # break type detection.
+    content = content.lstrip("﻿")
+
     reader = csv.DictReader(io.StringIO(content))
 
     if not reader.fieldnames:
         return IngestResult("unknown", 0, 0, ["Empty CSV or no headers found"])
 
-    # Normalize headers
-    headers = [h.strip().lower() for h in reader.fieldnames]
+    # Normalize headers (also strip any stray BOM left on the first field)
+    headers = [h.strip().lstrip("﻿").lower() for h in reader.fieldnames]
     csv_type = detect_csv_type(headers)
 
     if not csv_type:
