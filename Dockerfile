@@ -25,8 +25,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # App source, incl. the seeded knowledge base (data/firstresponder.db — Jefferson)
 COPY . .
 
-# claude CLI writes its config under $HOME; keep it inside the writable workdir.
-ENV HOME=/app \
+# The Claude Code CLI refuses `--dangerously-skip-permissions` (which the Agent
+# SDK's permission_mode="bypassPermissions" maps to) when running as root, so the
+# agent must run as a non-root user. Give it a real home for the CLI's config.
+RUN useradd -m -u 10001 appuser && chown -R appuser:appuser /app
+USER appuser
+ENV HOME=/home/appuser \
     PYTHONUNBUFFERED=1
 
 # Secrets (ANTHROPIC_API_KEY, SLACK_BOT_TOKEN, SLACK_APP_TOKEN, SLACK_USER_TOKEN)
