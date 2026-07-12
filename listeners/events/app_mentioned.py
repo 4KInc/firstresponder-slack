@@ -17,6 +17,7 @@ async def handle_app_mentioned(
     client: AsyncWebClient,
     context: AsyncBoltContext,
     event: dict,
+    body: dict,
     logger: Logger,
     say: AsyncSay,
     say_stream: AsyncSayStream,
@@ -59,7 +60,9 @@ async def handle_app_mentioned(
             thread_ts=thread_ts,
             message_ts=event["ts"],
             user_token=context.user_token or os.environ.get("SLACK_USER_TOKEN"),
-            team_id=context.team_id,
+            # On enterprise org installs context.team_id is often None; the
+            # workspace team_id lives in the event body/event instead.
+            team_id=context.team_id or body.get("team_id") or event.get("team"),
         )
         response_text, new_session_id = await run_agent(
             cleaned_text, session_id=existing_session_id, deps=deps
