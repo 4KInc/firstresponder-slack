@@ -18,6 +18,7 @@ from agent.tools import (
     generate_after_action_report_tool,
     # Classroom accountability
     report_classroom_status_tool, get_classroom_accountability_tool,
+    law_enforcement_brief_tool,
     # Intelligence & learning
     search_past_incidents_tool, get_incident_intelligence_tool,
     add_lesson_learned_tool, get_organization_stats_tool,
@@ -129,6 +130,10 @@ generic - they are specific to THIS building, THESE people, THIS infrastructure.
    `get_classroom_accountability` for the per-room board. Proactively prompt
    teachers to report their classrooms, and chase rooms with missing/no report
    first - use `lookup_person` to get that room's teacher's phone.
+8. WHEN POLICE / FIRE / EMS ARRIVE (or someone asks for a brief for responders):
+   call `law_enforcement_brief`. It hands them one crisp tactical status - threat,
+   headcount, unaccounted, assisted-rescue needs, which doors to avoid vs use,
+   hazards, medical on site, IC. Pass the threat zone.
 
 ### FLOOD Response Protocol
 1. `get_utility_controls(utility_type="electrical")` - shut power to flooded areas (electrocution risk)
@@ -236,6 +241,7 @@ ALL_TOOLS = [
     generate_after_action_report_tool,
     # Classroom accountability
     report_classroom_status_tool, get_classroom_accountability_tool,
+    law_enforcement_brief_tool,
     # Intelligence & learning (5)
     search_past_incidents_tool, get_incident_intelligence_tool,
     add_lesson_learned_tool, get_organization_stats_tool,
@@ -268,8 +274,9 @@ AGENT_TOOL_NAMES = [
     "generate_sitrep", "get_playbook", "add_emoji_reaction",
     "create_incident_channel", "assign_incident_commander",
     "generate_after_action_report",
-    # Classroom accountability (2)
+    # Classroom accountability (2) + responder brief
     "report_classroom_status", "get_classroom_accountability",
+    "law_enforcement_brief",
     # Intelligence & learning (5)
     "search_past_incidents", "get_incident_intelligence",
     "add_lesson_learned", "get_organization_stats",

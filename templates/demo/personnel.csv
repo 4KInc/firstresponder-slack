@@ -6,7 +6,7 @@ p004,Nurse Sarah,U_NURSE,School Nurse,Health,108,1,615-555-0107,David Park,615-5
 p005,Mrs. Rodriguez,U_RODRIGUEZ,3rd Grade Teacher,Teaching,101,1,615-555-0110,Jose Rodriguez,615-555-0111,,false,false,false,true,Floor Warden - East F1
 p006,Mr. Chen,U_CHEN,3rd Grade Teacher,Teaching,102,1,615-555-0112,Wei Chen,615-555-0113,,false,false,false,false,
 p007,Ms. Williams,U_WILLIAMS,4th Grade Teacher,Teaching,103,1,615-555-0114,James Williams,615-555-0115,,false,true,false,false,
-p008,Mrs. Davis,U_DAVIS,4th Grade Teacher,Teaching,104,1,615-555-0116,Robert Davis,615-555-0117,Uses wheelchair — elevator required for evacuation,true,false,false,false,
+p008,Mrs. Davis,U_DAVIS,4th Grade Teacher,Teaching,104,1,615-555-0116,Robert Davis,615-555-0117,Uses wheelchair - elevator required for evacuation,true,false,false,false,
 p009,Mr. Okafor,U_OKAFOR,5th Grade Teacher,Teaching,105,1,615-555-0118,Ada Okafor,615-555-0119,,false,false,false,false,
 p010,Ms. Garcia,U_GARCIA,5th Grade Teacher,Teaching,106,1,615-555-0120,Luis Garcia,615-555-0121,,false,true,true,false,
 p011,Mrs. Lee,U_LEE,ESL Teacher,Teaching,107,1,615-555-0122,Kevin Lee,615-555-0123,,false,false,false,false,
@@ -19,7 +19,7 @@ p017,Mr. Rivera,U_RIVERA,Music Teacher,Teaching,114,1,615-555-0134,Sofia Rivera,
 p018,Mrs. Nguyen,U_NGUYEN,6th Grade Teacher,Teaching,201,2,615-555-0136,Minh Nguyen,615-555-0137,,false,false,false,true,Floor Warden - East F2
 p019,Mr. Patel,U_PATEL,6th Grade Teacher,Teaching,202,2,615-555-0138,Priya Patel,615-555-0139,,false,false,false,false,
 p020,Ms. Clark,U_CLARK,7th Grade Teacher,Teaching,203,2,615-555-0140,Nancy Clark,615-555-0141,,false,true,true,false,
-p021,Mrs. Thompson,U_THOMPSON,7th Grade Teacher,Teaching,204,2,615-555-0142,John Thompson,615-555-0143,Knee replacement — limited mobility on stairs,true,false,false,false,
+p021,Mrs. Thompson,U_THOMPSON,7th Grade Teacher,Teaching,204,2,615-555-0142,John Thompson,615-555-0143,Knee replacement - limited mobility on stairs,true,false,false,false,
 p022,Mr. Kim,U_KIM,8th Grade Teacher,Teaching,205,2,615-555-0144,Susan Kim,615-555-0145,,false,false,false,false,
 p023,Ms. Johnson,U_JOHNSON,6th Grade Teacher,Teaching,209,2,615-555-0146,Mike Johnson,615-555-0147,,false,false,false,true,Floor Warden - West F2
 p024,Mr. Martinez,U_MARTINEZ,7th Grade Teacher,Teaching,210,2,615-555-0148,Ana Martinez,615-555-0149,,false,false,false,false,
