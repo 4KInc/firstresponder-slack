@@ -89,6 +89,21 @@ class CheckIn:
 
 
 @dataclass
+class ClassroomReport:
+    """A teacher's accountability report for their classroom (headcounts, not names)."""
+    room_id: str
+    students_safe: int
+    students_missing: int = 0
+    note: str = ""
+    reported_by: str = ""
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @property
+    def total(self) -> int:
+        return self.students_safe + self.students_missing
+
+
+@dataclass
 class SitRep:
     number: int
     timestamp: datetime
@@ -111,6 +126,7 @@ class Crisis:
     resolved_at: datetime | None = None
     incident_commander: str | None = None
     check_ins: dict[str, CheckIn] = field(default_factory=dict)
+    classroom_reports: dict[str, "ClassroomReport"] = field(default_factory=dict)
     sitreps: list[SitRep] = field(default_factory=list)
     timeline: list[dict] = field(default_factory=list)
     team_roster: list[str] = field(default_factory=list)

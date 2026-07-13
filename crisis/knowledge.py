@@ -563,6 +563,11 @@ class KnowledgeBase:
         students = sum(int(r.get("capacity") or 0) for r in rooms)
         return {"classroom_count": len(rooms), "estimated_students": students, "rooms": rooms}
 
+    def get_room(self, room_id: str) -> dict | None:
+        """Look up a single room by id (for classroom accountability)."""
+        row = self._conn.execute("SELECT * FROM rooms WHERE id = ?", (room_id,)).fetchone()
+        return dict(row) if row else None
+
     def get_personnel_by_slack_id(self, slack_user_id: str) -> dict | None:
         """Look up a person by their Slack user ID."""
         row = self._conn.execute(

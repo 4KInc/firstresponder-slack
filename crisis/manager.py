@@ -122,6 +122,27 @@ class CrisisManager:
 
         return checkin
 
+    def report_classroom(self, crisis_id: str, room_id: str, students_safe: int,
+                         students_missing: int = 0, note: str = "", reported_by: str = ""):
+        """Record a teacher's classroom accountability report (headcounts, no names)."""
+        from crisis.models import ClassroomReport
+        with self._lock:
+            crisis = self._crises.get(crisis_id)
+            if not crisis or crisis.status == CrisisStatus.RESOLVED:
+                return None
+            report = ClassroomReport(
+                room_id=room_id, students_safe=students_safe,
+                students_missing=students_missing, note=note, reported_by=reported_by,
+            )
+            crisis.classroom_reports[room_id] = report
+            crisis.add_timeline_event(
+                "classroom_report",
+                f"Room {room_id}: {students_safe} safe, {students_missing} missing",
+                reported_by or "system",
+            )
+        incident_store.save_timeline_event(crisis_id, crisis.timeline[-1])
+        return report
+
     def set_incident_commander(self, crisis_id: str, user_id: str) -> bool:
         with self._lock:
             crisis = self._crises.get(crisis_id)
