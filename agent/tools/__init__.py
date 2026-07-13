@@ -7,6 +7,7 @@ from .crisis import (
     generate_after_action_report_tool,
 )
 from .checkin import check_in_tool
+from .classroom import report_classroom_status_tool, get_classroom_accountability_tool
 from .sitrep import generate_sitrep_tool
 from .playbooks import get_playbook_tool
 from .emoji_reaction import add_emoji_reaction_tool
@@ -53,6 +54,9 @@ __all__ = [
     "create_incident_channel_tool",
     "assign_incident_commander_tool",
     "generate_after_action_report_tool",
+    # Classroom accountability (2)
+    "report_classroom_status_tool",
+    "get_classroom_accountability_tool",
     # Intelligence & learning (5)
     "search_past_incidents_tool",
     "get_incident_intelligence_tool",
