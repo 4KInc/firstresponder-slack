@@ -8,6 +8,7 @@ from .crisis import (
 )
 from .checkin import check_in_tool
 from .classroom import report_classroom_status_tool, get_classroom_accountability_tool
+from .brief import law_enforcement_brief_tool
 from .sitrep import generate_sitrep_tool
 from .playbooks import get_playbook_tool
 from .emoji_reaction import add_emoji_reaction_tool
@@ -57,6 +58,7 @@ __all__ = [
     # Classroom accountability (2)
     "report_classroom_status_tool",
     "get_classroom_accountability_tool",
+    "law_enforcement_brief_tool",
     # Intelligence & learning (5)
     "search_past_incidents_tool",
     "get_incident_intelligence_tool",
