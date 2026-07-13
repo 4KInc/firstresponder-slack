@@ -188,10 +188,12 @@ async def get_nearest_emergency_services_tool(args):
 @tool(
     name="get_people_in_danger_zone",
     description="""\
-Find all personnel whose default location is in or near a threat zone. \
-Use this immediately when a physical threat is reported to identify who \
-might be in danger. Returns names, locations, phone numbers, and any \
-special needs (mobility limitations, medical conditions).
+Identify EVERYONE in or near a threat zone — staff by name AND an estimated \
+student headcount (from classroom capacity), so you report the TOTAL number of \
+people in danger, not just adults. Use this immediately when a physical threat \
+is reported. Returns staff names, locations, phones, special needs (mobility/ \
+medical), plus students-per-zone across classrooms. Always surface the student \
+count for school scenarios — it is usually the largest population at risk.
 """,
     input_schema={
         "type": "object",
@@ -212,11 +214,30 @@ async def get_people_in_danger_zone_tool(args):
         zone_id=args.get("zone_id"),
         floor=args.get("floor"),
     )
+    # Students are modeled as classroom headcounts (not named), so an IC gets the
+    # full count in danger — staff AND kids — not just the adults.
+    occ = knowledge_base.get_zone_occupancy(
+        zone_id=args.get("zone_id"),
+        floor=args.get("floor"),
+    )
 
-    if not people:
-        return {"content": [{"type": "text", "text": "No personnel records for this zone/floor."}]}
+    if not people and not occ["classroom_count"]:
+        return {"content": [{"type": "text", "text": "No personnel or classroom records for this zone/floor."}]}
 
-    lines = [f"*Personnel in Danger Zone ({len(people)}):*\n"]
+    total = len(people) + occ["estimated_students"]
+    lines = [
+        f"*In the Danger Zone: ~{total} people — "
+        f"{len(people)} staff + ~{occ['estimated_students']} students "
+        f"({occ['classroom_count']} classrooms)*\n"
+    ]
+    if occ["classroom_count"]:
+        lines.append(
+            f":children_crossing: *~{occ['estimated_students']} students* are in "
+            f"{occ['classroom_count']} classrooms here (est. from classroom capacity — "
+            f"confirm live headcount at the assembly point). Each room's teacher is the "
+            f"first accountability point.\n"
+        )
+    lines.append(f"*Staff in zone ({len(people)}):*")
 
     # Sort: mobility limited first (highest priority)
     people.sort(key=lambda p: (-p.get("mobility_limitations", 0), p.get("name", "")))
