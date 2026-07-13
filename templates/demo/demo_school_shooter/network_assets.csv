@@ -1,0 +1,9 @@
+asset_id,name,asset_type,ip_address,location,criticality,dependencies,owner,notes
+core-switch,Core Network Switch,network,10.0.0.1,Server room off main office,critical,[],IT Coordinator,All wired and wireless traffic depends on this
+firewall,Perimeter Firewall / Gateway,network,10.0.0.2,Server room off main office,critical,"[""core-switch""]",IT Coordinator,Internet access and content filtering for the whole school
+dc-server,Domain Controller,server,10.0.1.10,Server room off main office,critical,"[""core-switch""]",IT Coordinator,Staff and student logins; DNS; group policy
+sis-server,Student Information System,server,10.0.1.20,Server room off main office,critical,"[""dc-server"",""core-switch""]",Registrar / IT Coordinator,"Attendance, grades, enrollment, FERPA student records"
+file-server,Staff File Server,server,10.0.1.30,Server room off main office,high,"[""dc-server"",""core-switch""]",IT Coordinator,Shared drives; lesson plans; HR documents
+backup-nas,Backup NAS,server,10.0.1.40,Server room off main office,high,"[""core-switch""]",IT Coordinator,Nightly backups of SIS and file server; last verified restore 2026-06-30
+wifi-controller,Wireless Controller,network,10.0.0.5,Server room off main office,medium,"[""core-switch"",""dc-server""]",IT Coordinator,All classroom Chromebooks and tablets
+voip-phones,VoIP Phone System,communications,10.0.2.10,Server room off main office,high,"[""core-switch"",""firewall""]",IT Coordinator,All office and classroom phones; 911 dialing

@@ -1,0 +1,4 @@
+team_name,service,primary_name,primary_slack_id,primary_phone,secondary_name,secondary_slack_id,secondary_phone,escalation_manager,escalation_phone,schedule_notes
+School IT,security,Marcus Bell (IT Coordinator),,615-555-8100,District Security Desk,,615-555-8199,District CTO Dana Reyes,615-555-8000,Marcus is on site school hours; district desk covers 24x7
+School IT,network,Marcus Bell (IT Coordinator),,615-555-8100,Metro Managed IT NOC,,615-555-7100,District CTO Dana Reyes,615-555-8000,Hardware issues route to MSP after 15 min
+Administration,legal,District Counsel Office,,615-555-8300,,,,Superintendent Office,615-555-8001,Contact for any data breach or notification decision

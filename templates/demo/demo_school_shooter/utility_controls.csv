@@ -1,0 +1,7 @@
+facility_id,utility_type,location_description,floor,zone_id,shutoff_instructions,requires_key,key_location
+jefferson,gas,Gas meter room behind cafeteria kitchen,1,cafeteria,Turn main valve 90 degrees clockwise until perpendicular to the pipe,true,Front office key box #3
+jefferson,electrical,Main electrical panel in boiler room off cafeteria,1,cafeteria,Throw MAIN breaker to OFF; sub-panels labeled by wing,true,Front office key box #3
+jefferson,electrical,East wing sub-panel in east stairwell closet,1,east-wing-f1,Flip EAST-WING main to OFF; does not cut fire alarm,false,
+jefferson,water,Water main shutoff in mechanical room near main entrance,1,admin-f1,Turn main gate valve fully clockwise; may take several turns,true,Front office key box #3
+jefferson,hvac,HVAC control panel in mechanical room,1,admin-f1,Press EMERGENCY STOP to halt air handlers (stops smoke spread),false,
+jefferson,fire_sprinkler,Fire sprinkler riser room near main entrance,1,admin-f1,Do NOT close unless directed by fire department; PIV valve outside Door 2,true,Fire dept Knox box at Door 2

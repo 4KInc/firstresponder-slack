@@ -1,0 +1,6 @@
+vendor_name,service,contact_name,contact_phone,contact_email,escalation_procedure,sla_hours,notes
+PowerSchool-style SIS Vendor,sis-server,Support Line,800-555-2200,support@sisvendor.example,Open Sev-1 ticket; if SIS down over 1 hour request emergency restore engineer,2,Hosts and supports the student information system
+Metro Managed IT,network,NOC Dispatch,615-555-7100,noc@metromanagedit.example,Call NOC line; if no answer in 15 min escalate to account manager Dana Reyes 615-555-7133,4,Manages core switch firewall and internet gateway
+Nashville Fiber ISP,internet,Business Support,800-555-3300,noc@nashvillefiber.example,Report circuit ID JEF-1200; request ETA and backup circuit,4,Primary internet; 1Gbps business fiber
+EdShield Cyber Insurance,cyber-insurance,Incident Hotline,844-555-4400,claims@edshield.example,Call BEFORE taking major recovery steps or paying any ransom; they assign a breach coach,1,Policy requires notification before ransom payment or public disclosure
+District IT Department,security,Help Desk,615-555-8000,helpdesk@district.example,Escalate school incidents to district SOC for coordinated response,2,Provides district-wide security monitoring and legal coordination

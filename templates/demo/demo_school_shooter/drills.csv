@@ -1,0 +1,6 @@
+facility_id,drill_type,date,total_evacuation_seconds,full_accountability_seconds,participants,slowest_zone,issues_noted,notes
+jefferson,fire,2026-05-15,272,310,418,east-wing-f2,Room 204 took 1:45 due to elevator wait; east stairwell bottleneck at F2,Best fire evac time this year
+jefferson,fire,2026-02-10,318,395,410,west-wing-f2,Science lab (Room 215) slow to secure chemicals before exit,Cold weather slowed exit
+jefferson,active-threat,2026-04-22,0,240,415,east-wing-f1,Two classrooms did not report headcount to office within 2 min,Lockdown drill; accountability gap flagged for follow up
+jefferson,weather,2026-03-05,0,180,412,gym,Gym class slow to reach interior shelter hallway,Tornado shelter-in-place drill
+jefferson,earthquake,2026-01-18,0,205,405,library,Drop-cover-hold on good; library evac to field orderly,Great Central US ShakeOut participation

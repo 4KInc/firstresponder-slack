@@ -1,0 +1,8 @@
+facility_id,material_name,hazard_class,location_description,floor,zone_id,quantity,sds_location,containment_instructions
+jefferson,Chlorine Bleach,8 - Corrosive,Custodial closet off west wing hallway,1,west-wing-f1,4 x 1 gallon,Binder in custodial office,Ventilate area; never mix with ammonia; absorb spills with sand
+jefferson,Ammonia Glass Cleaner,8 - Corrosive,Custodial closet off west wing hallway,1,west-wing-f1,6 x 32 oz,Binder in custodial office,Keep separate from bleach; ventilate; do not mix
+jefferson,Science Lab Reagents (acids/bases),8 - Corrosive,Room 215 chemical cabinet (locked),2,west-wing-f2,Assorted small bottles,Cabinet door + SDS binder Room 215,Lab teacher has key; neutralize spills with lab kit; evacuate if fumes
+jefferson,Natural Gas Line,2.1 - Flammable Gas,Kitchen behind cafeteria and boiler room,1,cafeteria,Building supply,Posted at gas meter room,Shut main valve before firefighting; evacuate on smell of gas
+jefferson,Propane (kitchen range backup),2.1 - Flammable Gas,Kitchen storage,1,cafeteria,2 x 20 lb cylinders,Kitchen manager office,Move cylinders away from heat; do not use elevators
+jefferson,Gasoline (grounds equipment),3 - Flammable Liquid,Maintenance shed exterior north lot,1,,10 gallons,Maintenance shed,Keep sparks away; foam or dry-chem extinguisher only
+jefferson,Pool/Spa Chlorine Tablets,5.1 - Oxidizer,Custodial storage (no pool - floor cleaning stock),1,admin-f1,1 x 25 lb bucket,Custodial office binder,Keep dry; do not mix with any acid; store away from bleach
