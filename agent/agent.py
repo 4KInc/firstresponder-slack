@@ -16,6 +16,8 @@ from agent.tools import (
     generate_sitrep_tool, get_playbook_tool, add_emoji_reaction_tool,
     create_incident_channel_tool, assign_incident_commander_tool,
     generate_after_action_report_tool,
+    # Classroom accountability
+    report_classroom_status_tool, get_classroom_accountability_tool,
     # Intelligence & learning
     search_past_incidents_tool, get_incident_intelligence_tool,
     add_lesson_learned_tool, get_organization_stats_tool,
@@ -121,6 +123,12 @@ generic — they are specific to THIS building, THESE people, THIS infrastructur
 4. `get_nearest_emergency_services(service_type="police_station")` — police ETA
 5. `get_assembly_points()` — safe rally point for evacuees (AWAY from threat)
 6. Do NOT recommend fire alarm — it gathers people in open areas
+7. STUDENT ACCOUNTABILITY (schools): students are accounted for by CLASSROOM, not
+   by name. When a teacher reports their class ("Room 104, 23 of 25 safe"), call
+   `report_classroom_status`. When the IC asks who's unaccounted, call
+   `get_classroom_accountability` for the per-room board. Proactively prompt
+   teachers to report their classrooms, and chase rooms with missing/no report
+   first — use `lookup_person` to get that room's teacher's phone.
 
 ### FLOOD Response Protocol
 1. `get_utility_controls(utility_type="electrical")` — shut power to flooded areas (electrocution risk)
@@ -215,6 +223,8 @@ ALL_TOOLS = [
     generate_sitrep_tool, get_playbook_tool, add_emoji_reaction_tool,
     create_incident_channel_tool, assign_incident_commander_tool,
     generate_after_action_report_tool,
+    # Classroom accountability
+    report_classroom_status_tool, get_classroom_accountability_tool,
     # Intelligence & learning (5)
     search_past_incidents_tool, get_incident_intelligence_tool,
     add_lesson_learned_tool, get_organization_stats_tool,
@@ -247,6 +257,8 @@ AGENT_TOOL_NAMES = [
     "generate_sitrep", "get_playbook", "add_emoji_reaction",
     "create_incident_channel", "assign_incident_commander",
     "generate_after_action_report",
+    # Classroom accountability (2)
+    "report_classroom_status", "get_classroom_accountability",
     # Intelligence & learning (5)
     "search_past_incidents", "get_incident_intelligence",
     "add_lesson_learned", "get_organization_stats",
