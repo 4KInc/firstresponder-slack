@@ -532,6 +532,37 @@ class KnowledgeBase:
 
         return [dict(r) for r in self._conn.execute(query, params).fetchall()]
 
+    def get_zone_occupancy(self, zone_id: str = None, floor: int = None) -> dict:
+        """Estimate students in a zone from classroom capacities.
+
+        Students are modeled as per-classroom headcounts (room capacity), not
+        named individuals — a school would never expose a student roster to a
+        bot, but an incident commander needs the total number of kids in the
+        danger zone. Returns the classroom count, estimated student total, and
+        the rooms (with teacher notes). Zone matching mirrors get_personnel_in_zone.
+        """
+        if zone_id:
+            zone_prefix = f"{zone_id}-%"
+            matching_zones = [r["id"] for r in self._conn.execute(
+                "SELECT id FROM zones WHERE id = ? OR id LIKE ?", (zone_id, zone_prefix)
+            ).fetchall()] or [zone_id]
+            placeholders = ", ".join("?" for _ in matching_zones)
+            query = f"SELECT * FROM rooms WHERE room_type = 'classroom' AND zone_id IN ({placeholders})"
+            params = list(matching_zones)
+            if floor is not None:
+                query += " AND floor = ?"
+                params.append(floor)
+        else:
+            query = "SELECT * FROM rooms WHERE room_type = 'classroom'"
+            params = []
+            if floor is not None:
+                query += " AND floor = ?"
+                params.append(floor)
+
+        rooms = [dict(r) for r in self._conn.execute(query, params).fetchall()]
+        students = sum(int(r.get("capacity") or 0) for r in rooms)
+        return {"classroom_count": len(rooms), "estimated_students": students, "rooms": rooms}
+
     def get_personnel_by_slack_id(self, slack_user_id: str) -> dict | None:
         """Look up a person by their Slack user ID."""
         row = self._conn.execute(
