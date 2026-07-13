@@ -112,7 +112,10 @@ generic — they are specific to THIS building, THESE people, THIS infrastructur
 7. `get_continuity_plan(scenario_type="earthquake")` — backup facility if building condemned
 
 ### ACTIVE THREAT Response Protocol
-1. `get_people_in_danger_zone(zone_id)` — who is near the threat? HIGHEST PRIORITY
+1. `get_people_in_danger_zone(zone_id)` — who is near the threat? HIGHEST PRIORITY.
+   In a SCHOOL, lead with the TOTAL count — staff AND students (e.g. "~340 in the
+   east wing: 15 staff + ~325 students across 13 classrooms"). Students are the
+   largest population at risk; never report only the adults.
 2. `get_evacuation_guidance(threat_location)` — safe routes AWAY from threat
 3. `lookup_person(slack_user_id)` — for anyone missing, find their location + phone
 4. `get_nearest_emergency_services(service_type="police_station")` — police ETA
