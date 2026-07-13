@@ -63,7 +63,7 @@ class CrisisManager:
             )
             crisis.add_timeline_event(
                 "crisis_started",
-                f"Crisis declared: {crisis_info['label']} — {description}",
+                f"Crisis declared: {crisis_info['label']} - {description}",
                 created_by,
             )
             self._crises[crisis_id] = crisis
@@ -288,7 +288,7 @@ class CrisisManager:
         if crisis.sitreps:
             lines.append(f"\n## Situation Reports ({len(crisis.sitreps)})")
             for sr in crisis.sitreps:
-                lines.append(f"\n### SITREP #{sr.number} — {sr.timestamp.strftime('%H:%M:%S UTC')}")
+                lines.append(f"\n### SITREP #{sr.number} - {sr.timestamp.strftime('%H:%M:%S UTC')}")
                 lines.append(sr.summary)
 
         # Past lessons learned for this crisis type

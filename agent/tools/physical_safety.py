@@ -1,4 +1,4 @@
-"""Physical safety tools — fire, earthquake, flood, weather, active threat, medical.
+"""Physical safety tools - fire, earthquake, flood, weather, active threat, medical.
 
 These tools query facility-specific data: utility shutoffs, assembly points,
 hazmat locations, nearby hospitals, and personnel in danger zones.
@@ -15,7 +15,7 @@ from crisis.knowledge import knowledge_base
 @tool(
     name="get_utility_controls",
     description="""\
-Find utility shutoff locations — gas valves, electrical panels, water mains, HVAC controls. \
+Find utility shutoff locations - gas valves, electrical panels, water mains, HVAC controls. \
 Critical during fires (shut gas to prevent explosion), floods (shut electrical to prevent \
 electrocution), gas leaks (shut gas main), and earthquakes (shut all utilities after shaking stops). \
 Always tell responders if a shutoff requires a key and where the key is.
@@ -55,7 +55,7 @@ async def get_utility_controls_tool(args):
         if c.get("shutoff_instructions"):
             lines.append(f"  Instructions: {c['shutoff_instructions']}")
         if c.get("requires_key"):
-            lines.append(f"  KEY REQUIRED — Key location: {c.get('key_location', 'unknown')}")
+            lines.append(f"  KEY REQUIRED - Key location: {c.get('key_location', 'unknown')}")
 
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
 
@@ -129,7 +129,7 @@ async def get_hazmat_info_tool(args):
 
     lines = [f"*HAZARDOUS MATERIALS IN AREA ({len(materials)}):*\n"]
     for m in materials:
-        lines.append(f"- *{m['material_name']}* — Hazard class: {m['hazard_class']}")
+        lines.append(f"- *{m['material_name']}* - Hazard class: {m['hazard_class']}")
         lines.append(f"  Location: {m['location_description']} (Floor {m.get('floor', '?')})")
         if m.get("quantity"):
             lines.append(f"  Quantity: {m['quantity']}")
@@ -188,12 +188,12 @@ async def get_nearest_emergency_services_tool(args):
 @tool(
     name="get_people_in_danger_zone",
     description="""\
-Identify EVERYONE in or near a threat zone — staff by name AND an estimated \
+Identify EVERYONE in or near a threat zone - staff by name AND an estimated \
 student headcount (from classroom capacity), so you report the TOTAL number of \
 people in danger, not just adults. Use this immediately when a physical threat \
 is reported. Returns staff names, locations, phones, special needs (mobility/ \
 medical), plus students-per-zone across classrooms. Always surface the student \
-count for school scenarios — it is usually the largest population at risk.
+count for school scenarios - it is usually the largest population at risk.
 """,
     input_schema={
         "type": "object",
@@ -215,7 +215,7 @@ async def get_people_in_danger_zone_tool(args):
         floor=args.get("floor"),
     )
     # Students are modeled as classroom headcounts (not named), so an IC gets the
-    # full count in danger — staff AND kids — not just the adults.
+    # full count in danger - staff AND kids - not just the adults.
     occ = knowledge_base.get_zone_occupancy(
         zone_id=args.get("zone_id"),
         floor=args.get("floor"),
@@ -226,14 +226,14 @@ async def get_people_in_danger_zone_tool(args):
 
     total = len(people) + occ["estimated_students"]
     lines = [
-        f"*In the Danger Zone: ~{total} people — "
+        f"*In the Danger Zone: ~{total} people - "
         f"{len(people)} staff + ~{occ['estimated_students']} students "
         f"({occ['classroom_count']} classrooms)*\n"
     ]
     if occ["classroom_count"]:
         lines.append(
             f":children_crossing: *~{occ['estimated_students']} students* are in "
-            f"{occ['classroom_count']} classrooms here (est. from classroom capacity — "
+            f"{occ['classroom_count']} classrooms here (est. from classroom capacity - "
             f"confirm live headcount at the assembly point). Each room's teacher is the "
             f"first accountability point.\n"
         )
@@ -244,7 +244,7 @@ async def get_people_in_danger_zone_tool(args):
 
     for p in people:
         uid = person_label(p.get("slack_user_id"), p.get("name"))
-        lines.append(f"- {uid} — {p.get('role', 'N/A')} — Location: {p.get('default_location', '?')}")
+        lines.append(f"- {uid} - {p.get('role', 'N/A')} - Location: {p.get('default_location', '?')}")
         if p.get("phone"):
             lines.append(f"  Phone: {p['phone']}")
 

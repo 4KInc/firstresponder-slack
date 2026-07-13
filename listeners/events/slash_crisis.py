@@ -69,14 +69,14 @@ async def handle_crisis_command(
 
 async def _send_help(client, channel_id, user_id):
     help_text = (
-        "*FirstResponder — Crisis Coordination Commands*\n\n"
-        "`/crisis start <type> <description>` — Declare a new crisis\n"
-        "`/crisis status` — View active crisis status\n"
-        "`/crisis checkin [safe|injured|evacuated|need-help]` — Check in\n"
-        "`/crisis resolve` — Resolve the active crisis\n"
-        "`/crisis playbook <type>` — View a response playbook\n"
-        "`/crisis setup` — Configure your building and personnel\n"
-        "`/crisis help` — Show this help message\n\n"
+        "*FirstResponder - Crisis Coordination Commands*\n\n"
+        "`/crisis start <type> <description>` - Declare a new crisis\n"
+        "`/crisis status` - View active crisis status\n"
+        "`/crisis checkin [safe|injured|evacuated|need-help]` - Check in\n"
+        "`/crisis resolve` - Resolve the active crisis\n"
+        "`/crisis playbook <type>` - View a response playbook\n"
+        "`/crisis setup` - Configure your building and personnel\n"
+        "`/crisis help` - Show this help message\n\n"
         f"*Crisis types:* {', '.join(CRISIS_TYPES.keys())}"
     )
     await client.chat_postEphemeral(channel=channel_id, user=user_id, text=help_text)
@@ -95,14 +95,14 @@ async def _handle_setup(client, channel_id, user_id):
         status_text = ":warning: *Knowledge base is empty.* FirstResponder will give generic guidance until you upload your building data."
 
     setup_text = (
-        "*FirstResponder — Setup Your Building*\n\n"
+        "*FirstResponder - Setup Your Building*\n\n"
         f"{status_text}\n\n"
         "---\n\n"
         "*How to configure:*\n"
         "1. Download CSV templates from the GitHub repo (`templates/` folder)\n"
         "2. Fill them out with your building's data\n"
-        "3. DM me (FirstResponder) and drag-drop each CSV file (any order — I auto-detect the type)\n"
-        "4. Re-upload anytime to update — I replace, not duplicate\n\n"
+        "3. DM me (FirstResponder) and drag-drop each CSV file (any order - I auto-detect the type)\n"
+        "4. Re-upload anytime to update - I replace, not duplicate\n\n"
         "*Building & people (start here):*\n"
         "`facility.csv` · `zones.csv` · `rooms.csv` · `personnel.csv`\n\n"
         "*Safety & evacuation:*\n"
@@ -154,7 +154,7 @@ async def _handle_start(client, channel_id, user_id, parts):
     await client.chat_postMessage(
         channel=channel_id,
         text=(
-            f":rotating_light: *CRISIS DECLARED — {crisis_info['label'].upper()}*\n\n"
+            f":rotating_light: *CRISIS DECLARED - {crisis_info['label'].upper()}*\n\n"
             f"*Incident ID:* `{crisis.id}`\n"
             f"*Severity:* {crisis.severity.value.upper()}\n"
             f"*Description:* {description}\n"
@@ -184,12 +184,12 @@ async def _handle_status(client, channel_id, user_id):
         if len(active) == 1:
             crisis = active[0]
         else:
-            # Multiple active crises — list them all
+            # Multiple active crises - list them all
             lines = [":clipboard: *Active Crises:*\n"]
             for c in active:
                 info = CRISIS_TYPES.get(c.crisis_type, CRISIS_TYPES["other"])
                 lines.append(
-                    f":{info['emoji']}: *{c.id}* — {info['label']} | "
+                    f":{info['emoji']}: *{c.id}* - {info['label']} | "
                     f"{c.severity.value.upper()} | {c.duration_minutes}min | "
                     f"Check-ins: {len(c.check_ins)}/{len(c.team_roster)}"
                 )
@@ -200,7 +200,7 @@ async def _handle_status(client, channel_id, user_id):
     missing = crisis.missing_checkins
 
     status_text = (
-        f":{info['emoji']}: *{crisis.id} — {info['label']}*\n\n"
+        f":{info['emoji']}: *{crisis.id} - {info['label']}*\n\n"
         f"*Severity:* {crisis.severity.value.upper()}\n"
         f"*Status:* {crisis.status.value.upper()}\n"
         f"*Duration:* {crisis.duration_minutes} minutes\n"

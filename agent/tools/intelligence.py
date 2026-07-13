@@ -1,4 +1,4 @@
-"""AI-powered intelligence tools — learning, pattern recognition, and recommendations."""
+"""AI-powered intelligence tools - learning, pattern recognition, and recommendations."""
 
 from claude_agent_sdk import tool
 
@@ -11,7 +11,7 @@ from crisis import crisis_manager, CRISIS_TYPES
     description="""\
 Search past resolved incidents by keyword. Use this to find how similar situations \
 were handled before, what worked, what didn't, and how long they took to resolve. \
-Always check past incidents when a new crisis starts — learning from history saves lives.
+Always check past incidents when a new crisis starts - learning from history saves lives.
 """,
     input_schema={
         "type": "object",
@@ -35,7 +35,7 @@ async def search_past_incidents_tool(args):
     for inc in results:
         info = CRISIS_TYPES.get(inc["crisis_type"], CRISIS_TYPES["other"])
         lines.append(
-            f"- *{inc['id']}* — {info['label']}: {inc['description']}\n"
+            f"- *{inc['id']}* - {info['label']}: {inc['description']}\n"
             f"  Severity: {inc['severity'].upper()} | Duration: {inc['duration_minutes']}min | "
             f"Status: {inc['status'].upper()}"
         )
@@ -111,7 +111,7 @@ Examples of good lessons:
             },
             "lesson": {
                 "type": "string",
-                "description": "The lesson learned — be specific and actionable.",
+                "description": "The lesson learned - be specific and actionable.",
             },
             "category": {
                 "type": "string",
@@ -186,7 +186,7 @@ async def get_organization_stats_tool(args):
     description="""\
 Generate an escalation report for personnel who haven't checked in during an active crisis. \
 Includes how long each person has been missing and recommends escalation actions. \
-Use this proactively — don't wait for someone to ask about missing people.
+Use this proactively - don't wait for someone to ask about missing people.
 """,
     input_schema={
         "type": "object",
@@ -220,26 +220,26 @@ async def get_missing_checkin_report_tool(args):
         return {"content": [{"type": "text", "text": f"All {len(crisis.team_roster)} personnel accounted for."}]}
 
     lines = [
-        f"MISSING PERSONNEL REPORT — {crisis.id}",
+        f"MISSING PERSONNEL REPORT - {crisis.id}",
         f"Crisis duration: {duration} minutes",
         f"Missing: {len(missing)}/{len(crisis.team_roster)}\n",
     ]
 
     # Escalation levels based on time
     if duration < 5:
-        level = "INITIAL — send reminder"
+        level = "INITIAL - send reminder"
     elif duration < 15:
-        level = "ELEVATED — direct message each missing person"
+        level = "ELEVATED - direct message each missing person"
     elif duration < 30:
-        level = "HIGH — attempt phone contact, notify their manager"
+        level = "HIGH - attempt phone contact, notify their manager"
     else:
-        level = "CRITICAL — assume in danger, notify emergency services"
+        level = "CRITICAL - assume in danger, notify emergency services"
 
     lines.append(f"Escalation level: *{level}*\n")
     lines.append("Missing personnel:")
     for uid in missing:
-        lines.append(f"- <@{uid}> — no check-in for {duration} minutes")
+        lines.append(f"- <@{uid}> - no check-in for {duration} minutes")
 
-    lines.append(f"\nRecommended action: {level.split(' — ')[1]}")
+    lines.append(f"\nRecommended action: {level.split(' - ')[1]}")
 
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
