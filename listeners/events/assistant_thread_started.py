@@ -7,7 +7,7 @@ from slack_bolt.context.set_suggested_prompts.async_set_suggested_prompts import
 SUGGESTED_PROMPTS = [
     {
         "title": ":rotating_light: Start a Crisis",
-        "message": "We have an emergency — help me start a crisis response",
+        "message": "We have an emergency - help me start a crisis response",
     },
     {
         "title": ":clipboard: View Active Incidents",
@@ -30,7 +30,7 @@ async def handle_assistant_thread_started(
     try:
         await set_suggested_prompts(
             prompts=SUGGESTED_PROMPTS,
-            title="FirstResponder — Crisis Coordination Agent",
+            title="FirstResponder - Crisis Coordination Agent",
         )
     except Exception as e:
         logger.exception(f"Failed to handle assistant thread started: {e}")

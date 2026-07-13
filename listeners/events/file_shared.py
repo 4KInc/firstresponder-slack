@@ -1,4 +1,4 @@
-"""Handle CSV file uploads — auto-ingest into the knowledge base."""
+"""Handle CSV file uploads - auto-ingest into the knowledge base."""
 
 from logging import Logger
 

@@ -63,7 +63,7 @@ __all__ = [
     "add_lesson_learned_tool",
     "get_organization_stats_tool",
     "get_missing_checkin_report_tool",
-    # Knowledge base — general (8)
+    # Knowledge base - general (8)
     "get_evacuation_guidance_tool",
     "find_emergency_resources_tool",
     "lookup_person_tool",
@@ -72,13 +72,13 @@ __all__ = [
     "get_vendor_contacts_tool",
     "get_drill_performance_tool",
     "get_knowledge_summary_tool",
-    # Knowledge base — physical safety (5)
+    # Knowledge base - physical safety (5)
     "get_utility_controls_tool",
     "get_assembly_points_tool",
     "get_hazmat_info_tool",
     "get_nearest_emergency_services_tool",
     "get_people_in_danger_zone_tool",
-    # Knowledge base — cyber & operations (4)
+    # Knowledge base - cyber & operations (4)
     "get_data_at_risk_tool",
     "get_runbook_tool",
     "get_on_call_tool",

@@ -105,7 +105,7 @@ async def crisis_status_tool(args):
         if active:
             summary = "\n".join(
                 f"- *{c.id}*: {CRISIS_TYPES.get(c.crisis_type, CRISIS_TYPES['other'])['label']} "
-                f"— {c.description} ({c.severity.value.upper()}, {c.duration_minutes}min)"
+                f"- {c.description} ({c.severity.value.upper()}, {c.duration_minutes}min)"
                 for c in active
             )
             return {"content": [{"type": "text", "text": f"No crisis in this channel. Active crises:\n{summary}"}]}
@@ -240,7 +240,7 @@ async def create_incident_channel_tool(args):
         # Set channel topic
         await deps.client.conversations_setTopic(
             channel=new_channel_id,
-            topic=f":rotating_light: {crisis_info['label']} — {crisis.severity.value.upper()} | {crisis.id} | Status: ACTIVE",
+            topic=f":rotating_light: {crisis_info['label']} - {crisis.severity.value.upper()} | {crisis.id} | Status: ACTIVE",
         )
 
         # Set channel purpose

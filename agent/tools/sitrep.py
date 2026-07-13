@@ -46,10 +46,10 @@ async def generate_sitrep_tool(args):
 
     sitrep = crisis_manager.add_sitrep(crisis_id, summary, actions_taken)
     if not sitrep:
-        return {"content": [{"type": "text", "text": f"Could not generate SITREP — crisis {crisis_id} not found."}]}
+        return {"content": [{"type": "text", "text": f"Could not generate SITREP - crisis {crisis_id} not found."}]}
 
     lines = [
-        f"SITREP #{sitrep.number} — {sitrep.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}",
+        f"SITREP #{sitrep.number} - {sitrep.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}",
         f"Incident: {crisis_id}",
         "",
         f"*Situation:*\n{sitrep.summary}",

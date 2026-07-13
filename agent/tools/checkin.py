@@ -53,7 +53,7 @@ async def check_in_tool(args):
 
     checkin = crisis_manager.check_in(crisis_id, user_id, status, note)
     if not checkin:
-        return {"content": [{"type": "text", "text": f"Could not check in — crisis {crisis_id} not found or already resolved."}]}
+        return {"content": [{"type": "text", "text": f"Could not check in - crisis {crisis_id} not found or already resolved."}]}
 
     crisis = crisis_manager.get_crisis(crisis_id)
     checked_in_count = len(crisis.check_ins)
@@ -71,7 +71,7 @@ async def check_in_tool(args):
         f"{status_emoji.get(status, ':white_check_mark:')} <@{user_id}> checked in as *{status}*"
     )
     if note:
-        response += f" — {note}"
+        response += f" - {note}"
     response += f"\n\nCheck-in progress: {checked_in_count}/{roster_count}"
 
     if missing:

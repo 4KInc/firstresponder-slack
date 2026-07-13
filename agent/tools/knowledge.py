@@ -1,4 +1,4 @@
-"""Knowledge-aware tools — the agent queries organizational context during crises.
+"""Knowledge-aware tools - the agent queries organizational context during crises.
 
 These tools give the agent access to building layouts, personnel info, resource locations,
 network topology, and drill history. This is what makes FirstResponder context-aware
@@ -69,13 +69,13 @@ async def get_evacuation_guidance_tool(args):
     if guidance["mobility_limited_personnel"]:
         lines.append(f"\n*Personnel Requiring Assistance ({len(guidance['mobility_limited_personnel'])}):*")
         for p in guidance["mobility_limited_personnel"]:
-            lines.append(f"- {p['name']} — Location: {p['default_location']}, Floor {p['floor']}")
+            lines.append(f"- {p['name']} - Location: {p['default_location']}, Floor {p['floor']}")
 
     if guidance["floor_wardens"]:
         lines.append(f"\n*Floor Wardens:*")
         for w in guidance["floor_wardens"]:
             uid = person_label(w.get("slack_user_id"), w.get("name"))
-            lines.append(f"- {uid} — {w['default_location']}, Floor {w['floor']}")
+            lines.append(f"- {uid} - {w['default_location']}, Floor {w['floor']}")
 
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
 
@@ -83,7 +83,7 @@ async def get_evacuation_guidance_tool(args):
 @tool(
     name="find_emergency_resources",
     description="""\
-Find nearby emergency resources — AEDs, fire extinguishers, first aid kits, \
+Find nearby emergency resources - AEDs, fire extinguishers, first aid kits, \
 emergency exits, trauma kits, etc. Use this during medical emergencies, fires, \
 or any situation where physical resources are needed.
 """,
@@ -131,28 +131,46 @@ async def find_emergency_resources_tool(args):
 @tool(
     name="lookup_person",
     description="""\
-Look up a person's details — location, emergency contacts, medical notes, training. \
-Use this when someone hasn't checked in to find their likely location, or during \
-a medical emergency to check for relevant medical conditions. Also useful for finding \
-who is trained in first aid/CPR near a medical emergency.
+Look up a person's details - phone, location, emergency contacts, medical notes, \
+training. Look up by NAME (e.g. "Mr. Patel"), by ROOM/location (e.g. "202" to get \
+that room's teacher), or by Slack user ID. Use this to reach a classroom's teacher, \
+to find someone who hasn't checked in, or to check medical conditions. Teachers \
+usually have a phone but no Slack account, so prefer name or room over Slack ID.
 """,
     input_schema={
         "type": "object",
         "properties": {
+            "name": {
+                "type": "string",
+                "description": "Person's name (e.g. 'Mr. Patel') or a room/location id (e.g. '202').",
+            },
             "slack_user_id": {
                 "type": "string",
-                "description": "The Slack user ID to look up (e.g., U01ABCDEF)",
+                "description": "The Slack user ID, if known (e.g., U01ABCDEF).",
             },
         },
-        "required": ["slack_user_id"],
     },
 )
 async def lookup_person_tool(args):
-    slack_user_id = args["slack_user_id"]
-    person = knowledge_base.get_personnel_by_slack_id(slack_user_id)
+    slack_user_id = args.get("slack_user_id")
+    name = args.get("name")
+
+    person = None
+    if slack_user_id:
+        person = knowledge_base.get_personnel_by_slack_id(slack_user_id)
+    if not person and name:
+        matches = knowledge_base.get_personnel_by_name(name)
+        if len(matches) > 1:
+            listing = "\n".join(
+                f"- {m['name']} - {m.get('role','')} - Rm {m.get('default_location','?')} - {m.get('phone','no phone')}"
+                for m in matches
+            )
+            return {"content": [{"type": "text", "text": f"Multiple people match '{name}':\n{listing}"}]}
+        person = matches[0] if matches else None
 
     if not person:
-        return {"content": [{"type": "text", "text": f"No personnel record found for {person_label(slack_user_id)}. They may not be in the directory."}]}
+        who = name or person_label(slack_user_id)
+        return {"content": [{"type": "text", "text": f"No personnel record found for {who}. They may not be in the directory."}]}
 
     lines = [
         f"*Personnel Record: {person['name']}*\n",
@@ -163,11 +181,11 @@ async def lookup_person_tool(args):
     ]
 
     if person.get("emergency_contact_name"):
-        lines.append(f"- Emergency Contact: {person['emergency_contact_name']} — {person.get('emergency_contact_phone', 'N/A')}")
+        lines.append(f"- Emergency Contact: {person['emergency_contact_name']} - {person.get('emergency_contact_phone', 'N/A')}")
 
     flags = []
     if person.get("mobility_limitations"):
-        flags.append("MOBILITY LIMITED — needs elevator/assistance for evacuation")
+        flags.append("MOBILITY LIMITED - needs elevator/assistance for evacuation")
     if person.get("trained_first_aid"):
         flags.append("First Aid trained")
     if person.get("trained_cpr"):
@@ -215,7 +233,7 @@ async def find_first_aid_responders_tool(args):
             certs.append("CPR/AED")
 
         uid = person_label(p.get("slack_user_id"), p.get("name"))
-        lines.append(f"- {uid} — {', '.join(certs)} — Location: {p.get('default_location', '?')}, Floor {p.get('floor', '?')}")
+        lines.append(f"- {uid} - {', '.join(certs)} - Location: {p.get('default_location', '?')}, Floor {p.get('floor', '?')}")
 
     return {"content": [{"type": "text", "text": "\n".join(lines)}]}
 
@@ -249,7 +267,7 @@ async def get_blast_radius_tool(args):
     lines = [f"*Blast Radius for `{asset_id}` ({len(affected)} dependent systems):*\n"]
     for a in affected:
         lines.append(
-            f"- *{a['name']}* (`{a['id']}`) — {a['asset_type']} | "
+            f"- *{a['name']}* (`{a['id']}`) - {a['asset_type']} | "
             f"Criticality: {a.get('criticality', 'unknown').upper()} | "
             f"Owner: {a.get('owner', 'unknown')}"
         )
@@ -288,7 +306,7 @@ async def get_vendor_contacts_tool(args):
 
     lines = [f"*Vendor Contacts for '{service}':*\n"]
     for v in vendors:
-        lines.append(f"*{v['vendor_name']}* — {v['service']}")
+        lines.append(f"*{v['vendor_name']}* - {v['service']}")
         if v.get("contact_name"):
             lines.append(f"- Contact: {v['contact_name']}")
         if v.get("contact_phone"):
@@ -309,7 +327,7 @@ async def get_vendor_contacts_tool(args):
     description="""\
 Get past drill performance data to benchmark current crisis response. \
 Shows evacuation times, accountability times, and issues from past drills. \
-Use this to set expectations: "Last fire drill took 4:32 — we should beat that."
+Use this to set expectations: "Last fire drill took 4:32 - we should beat that."
 """,
     input_schema={
         "type": "object",
@@ -335,7 +353,7 @@ async def get_drill_performance_tool(args):
     for d in drills:
         evac_time = f"{d['total_evacuation_seconds'] // 60}:{d['total_evacuation_seconds'] % 60:02d}"
         lines.append(
-            f"- *{d['drill_type'].title()}* ({d['date']}) — "
+            f"- *{d['drill_type'].title()}* ({d['date']}) - "
             f"Evacuation: {evac_time} | Participants: {d.get('participants', '?')}"
         )
         if d.get("slowest_zone"):

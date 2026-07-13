@@ -2,11 +2,11 @@ PLAYBOOKS = {
     "earthquake": {
         "title": "Earthquake Response Playbook",
         "immediate_actions": [
-            "Drop, Cover, Hold On — do not evacuate during shaking",
+            "Drop, Cover, Hold On - do not evacuate during shaking",
             "Once shaking stops: check for injuries, assess structural damage",
-            "Evacuate if building damage is visible — use stairs, not elevators",
+            "Evacuate if building damage is visible - use stairs, not elevators",
             "Move to designated assembly point",
-            "Account for all personnel — check in with your team lead",
+            "Account for all personnel - check in with your team lead",
         ],
         "roles": [
             {"role": "Incident Commander", "responsibilities": "Overall coordination, communication with emergency services"},
@@ -27,7 +27,7 @@ PLAYBOOKS = {
         "immediate_actions": [
             "Activate fire alarm if not already triggered",
             "Call 911 / local fire department immediately",
-            "Evacuate via nearest safe exit — do NOT use elevators",
+            "Evacuate via nearest safe exit - do NOT use elevators",
             "Close doors behind you to slow fire spread",
             "Assemble at designated rally point for headcount",
         ],
@@ -71,11 +71,11 @@ PLAYBOOKS = {
     "active_threat": {
         "title": "Active Threat Response Playbook",
         "immediate_actions": [
-            "RUN: Evacuate if safe path exists — leave belongings behind",
+            "RUN: Evacuate if safe path exists - leave belongings behind",
             "HIDE: If evacuation impossible, find secure room, lock/barricade door",
-            "FIGHT: Last resort only — act with aggression, improvise weapons",
-            "Call 911 when safe to do so — provide location and description",
-            "Do NOT pull fire alarm — it causes people to gather in open areas",
+            "FIGHT: Last resort only - act with aggression, improvise weapons",
+            "Call 911 when safe to do so - provide location and description",
+            "Do NOT pull fire alarm - it causes people to gather in open areas",
         ],
         "roles": [
             {"role": "Incident Commander", "responsibilities": "Coordinate with law enforcement, account for personnel"},
@@ -96,7 +96,7 @@ PLAYBOOKS = {
         "immediate_actions": [
             "Identify affected systems and scope of compromise",
             "Isolate compromised systems from the network immediately",
-            "Preserve forensic evidence — do NOT reboot affected machines",
+            "Preserve forensic evidence - do NOT reboot affected machines",
             "Activate incident response team communication channel",
             "Notify legal, compliance, and executive leadership",
         ],
@@ -117,9 +117,9 @@ PLAYBOOKS = {
     "data_breach": {
         "title": "Data Breach Response Playbook",
         "immediate_actions": [
-            "Confirm the breach — identify what data was exposed",
-            "Contain the breach — revoke access, patch vulnerability",
-            "Document everything — timestamps, affected records, actions taken",
+            "Confirm the breach - identify what data was exposed",
+            "Contain the breach - revoke access, patch vulnerability",
+            "Document everything - timestamps, affected records, actions taken",
             "Notify legal counsel and compliance team",
             "Begin regulatory breach notification timeline (72h GDPR, varies by jurisdiction)",
         ],
@@ -140,7 +140,7 @@ PLAYBOOKS = {
     "outage": {
         "title": "Service Outage Response Playbook",
         "immediate_actions": [
-            "Confirm outage scope — which services, which users affected",
+            "Confirm outage scope - which services, which users affected",
             "Check monitoring dashboards for root cause indicators",
             "Engage on-call engineers for affected systems",
             "Post status page update within 15 minutes",
@@ -186,8 +186,8 @@ PLAYBOOKS = {
     "medical": {
         "title": "Medical Emergency Response Playbook",
         "immediate_actions": [
-            "Call 911 immediately — provide exact location and nature of emergency",
-            "Administer first aid if trained — CPR, AED, bleeding control",
+            "Call 911 immediately - provide exact location and nature of emergency",
+            "Administer first aid if trained - CPR, AED, bleeding control",
             "Clear the area around the patient",
             "Send someone to meet and guide EMS to the patient",
             "Do NOT move the patient unless in immediate danger",
@@ -209,10 +209,10 @@ PLAYBOOKS = {
     "generic": {
         "title": "General Incident Response Playbook",
         "immediate_actions": [
-            "Assess the situation — determine scope and severity",
+            "Assess the situation - determine scope and severity",
             "Ensure immediate safety of all personnel",
             "Notify relevant leadership and stakeholders",
-            "Document the incident — what happened, when, who is affected",
+            "Document the incident - what happened, when, who is affected",
             "Establish communication cadence for updates",
         ],
         "roles": [
@@ -250,7 +250,7 @@ def format_playbook_message(crisis_type_key: str) -> str:
 
     lines.append("\n*Roles Needed:*")
     for role in playbook["roles"]:
-        lines.append(f">*{role['role']}* — {role['responsibilities']}")
+        lines.append(f">*{role['role']}* - {role['responsibilities']}")
 
     lines.append("\n*Resources:*")
     for resource in playbook["resources_needed"]:
