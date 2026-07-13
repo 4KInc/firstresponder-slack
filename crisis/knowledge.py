@@ -1,4 +1,4 @@
-"""Organizational Knowledge Base — the context engine that makes FirstResponder intelligent.
+"""Organizational Knowledge Base - the context engine that makes FirstResponder intelligent.
 
 Organizations upload their specific data (floor plans, personnel, resources, network topology)
 and the agent uses this context during crises to give location-aware, people-aware,
@@ -490,7 +490,7 @@ class KnowledgeBase:
             # zone id still matches exactly via the "id = ?" clause.
             zone_prefix = f"{zone_id}-%"
 
-            # Find matching zones — exact match first, then boundary-partial match
+            # Find matching zones - exact match first, then boundary-partial match
             matching_zones = [r["id"] for r in self._conn.execute(
                 "SELECT id FROM zones WHERE id = ? OR id LIKE ?",
                 (zone_id, zone_prefix)
@@ -536,7 +536,7 @@ class KnowledgeBase:
         """Estimate students in a zone from classroom capacities.
 
         Students are modeled as per-classroom headcounts (room capacity), not
-        named individuals — a school would never expose a student roster to a
+        named individuals - a school would never expose a student roster to a
         bot, but an incident commander needs the total number of kids in the
         danger zone. Returns the classroom count, estimated student total, and
         the rooms (with teacher notes). Zone matching mirrors get_personnel_in_zone.
@@ -574,6 +574,23 @@ class KnowledgeBase:
             "SELECT * FROM personnel WHERE slack_user_id = ?", (slack_user_id,)
         ).fetchone()
         return dict(row) if row else None
+
+    def get_personnel_by_name(self, name: str) -> list[dict]:
+        """Look up people by name (fuzzy) or exact room/location.
+
+        Personnel carry a phone and location but often no real Slack id (a
+        teacher isn't a Slack user), so name is how the agent reaches them -
+        e.g. resolving "Mr. Patel" or the teacher of Room 202 to a phone number.
+        """
+        term = (name or "").strip()
+        if not term:
+            return []
+        rows = self._conn.execute(
+            "SELECT * FROM personnel WHERE name LIKE ? OR default_location = ? "
+            "ORDER BY name LIMIT 10",
+            (f"%{term}%", term),
+        ).fetchall()
+        return [dict(r) for r in rows]
 
     def get_affected_systems(self, asset_id: str) -> list[dict]:
         """Get systems that depend on a compromised asset (blast radius)."""

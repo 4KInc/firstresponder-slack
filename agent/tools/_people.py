@@ -8,7 +8,7 @@ otherwise fall back to the person's name.
 
 import re
 
-# Real Slack user ids look like U0BE0A0BWGH / W012ABC3DEF — a leading U or W
+# Real Slack user ids look like U0BE0A0BWGH / W012ABC3DEF - a leading U or W
 # followed by uppercase-alphanumeric (no underscores). Placeholder demo ids like
 # "U_DAVIS" contain underscores and won't match.
 _REAL_SLACK_ID = re.compile(r"[UW][A-Z0-9]{7,}")

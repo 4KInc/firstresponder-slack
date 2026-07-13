@@ -9,7 +9,7 @@ def build_app_home_view(
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": "FirstResponder — Crisis Coordination Agent",
+                "text": "FirstResponder - Crisis Coordination Agent",
             },
         },
         {
@@ -40,7 +40,7 @@ def build_app_home_view(
             "text": {
                 "type": "mrkdwn",
                 "text": "\n".join(
-                    f":{info['emoji']}: *{info['label']}* — `/crisis playbook {key}`"
+                    f":{info['emoji']}: *{info['label']}* - `/crisis playbook {key}`"
                     for key, info in CRISIS_TYPES.items()
                 ),
             },
@@ -65,7 +65,7 @@ def build_app_home_view(
                 "text": {
                     "type": "mrkdwn",
                     "text": (
-                        f":{info['emoji']}: *{c.id}* — {info['label']}\n"
+                        f":{info['emoji']}: *{c.id}* - {info['label']}\n"
                         f"Severity: {c.severity.value.upper()} | "
                         f"Duration: {c.duration_minutes}min | "
                         f"Check-ins: {len(c.check_ins)}/{len(c.team_roster)}"

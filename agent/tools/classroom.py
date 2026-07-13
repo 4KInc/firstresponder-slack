@@ -1,4 +1,4 @@
-"""Classroom-level accountability — how schools actually track students in a crisis.
+"""Classroom-level accountability - how schools actually track students in a crisis.
 
 Students are never stored as named individuals (privacy). Instead each TEACHER
 reports their classroom's headcount ("Room 104: 23 of 25 safe, 2 missing"), and
@@ -50,7 +50,7 @@ def _board(crisis, zone_id=None) -> dict:
 @tool(
     name="report_classroom_status",
     description="""\
-Record a TEACHER's accountability report for their classroom during a crisis — \
+Record a TEACHER's accountability report for their classroom during a crisis - \
 headcounts only, never student names. Use this whenever a teacher reports their \
 class (e.g. "Room 104, 23 of 25 safe, 2 missing"). This is how schools account \
 for students in a lockdown: the classroom is the unit, the teacher is the reporter.
@@ -81,7 +81,7 @@ async def report_classroom_status_tool(args):
     room = knowledge_base.get_room(room_id)
     report = crisis_manager.report_classroom(crisis.id, room_id, safe, missing, note, deps.user_id)
     if not report:
-        return _text("Could not record the report — the crisis is not active.")
+        return _text("Could not record the report - the crisis is not active.")
 
     room_name = room["name"] if room else f"Room {room_id}"
     teacher = _teacher(room)
@@ -90,7 +90,7 @@ async def report_classroom_status_tool(args):
     if missing:
         line += f", :red_circle: *{missing} MISSING*"
     if note:
-        line += f" — {note}"
+        line += f" - {note}"
     line += (
         f"\n\n_Accountability: {len(b['reported'])}/{len(b['classrooms'])} classrooms reported · "
         f"{b['safe']} students safe · {b['missing']} missing · "
@@ -127,7 +127,7 @@ async def get_classroom_accountability_tool(args):
 
     reports = crisis.classroom_reports
     lines = [
-        f"*:clipboard: CLASSROOM ACCOUNTABILITY — {len(b['reported'])}/{len(b['classrooms'])} rooms reported*\n"
+        f"*:clipboard: CLASSROOM ACCOUNTABILITY - {len(b['reported'])}/{len(b['classrooms'])} rooms reported*\n"
     ]
     # sort: rooms with missing first, then unreported, then all-safe
     def _key(c):
@@ -143,7 +143,7 @@ async def get_classroom_accountability_tool(args):
         label = f"{room_name}" + (f" ({teacher})" if teacher else "")
         r = reports.get(c["id"])
         if r and r.students_missing:
-            lines.append(f":red_circle: *{label}: {r.students_safe}/{r.total} — {r.students_missing} MISSING*" + (f" — {r.note}" if r.note else ""))
+            lines.append(f":red_circle: *{label}: {r.students_safe}/{r.total} - {r.students_missing} MISSING*" + (f" - {r.note}" if r.note else ""))
         elif r:
             lines.append(f":white_check_mark: {label}: {r.students_safe}/{r.total} safe")
         else:
@@ -154,5 +154,5 @@ async def get_classroom_accountability_tool(args):
         f"~{b['unreported_students']} unreported ({len(b['unreported'])} rooms)*"
     )
     if b["missing"] or b["unreported"]:
-        lines.append("_Chase the red/⚫ rooms first — call the teacher's phone (`lookup_person`)._")
+        lines.append("_Chase the red/⚫ rooms first - call the teacher's phone (`lookup_person`)._")
     return _text("\n".join(lines))

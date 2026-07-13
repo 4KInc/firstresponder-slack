@@ -1,4 +1,4 @@
-"""Cyber incident tools — cyberattack, data breach, outage.
+"""Cyber incident tools - cyberattack, data breach, outage.
 
 These tools query network topology, data inventory, runbooks, on-call schedules,
 and business continuity plans for infrastructure-aware incident response.
@@ -21,7 +21,7 @@ notification requirements. Use this IMMEDIATELY during data breaches to understa
 scope and trigger the right notification timelines.
 
 Example: if 'donor-db' is breached, this tells you "50,000 donor records with names, \
-emails, credit cards — PCI-DSS applies, 72-hour notification required."
+emails, credit cards - PCI-DSS applies, 72-hour notification required."
 """,
     input_schema={
         "type": "object",
@@ -151,7 +151,7 @@ async def get_on_call_tool(args):
 
     lines = [f"*On-Call Contacts ({len(schedules)}):*\n"]
     for s in schedules:
-        lines.append(f"*{s['team_name']}* — {s['service']}")
+        lines.append(f"*{s['team_name']}* - {s['service']}")
 
         primary_uid = person_label(s.get("primary_slack_id"), s.get("primary_name"))
         lines.append(f"- Primary: {primary_uid}")
@@ -177,7 +177,7 @@ async def get_on_call_tool(args):
 @tool(
     name="get_continuity_plan",
     description="""\
-Get the business continuity plan for a scenario — what to do when normal operations \
+Get the business continuity plan for a scenario - what to do when normal operations \
 are disrupted. Shows trigger conditions, required actions, whether remote work is \
 possible, backup facilities, critical functions, and recovery time objectives. \
 Use during extended outages, severe weather, or any event that threatens normal operations.

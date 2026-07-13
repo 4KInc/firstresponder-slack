@@ -1,4 +1,4 @@
-"""CSV ingestion engine — parses uploaded CSV files into the knowledge base.
+"""CSV ingestion engine - parses uploaded CSV files into the knowledge base.
 
 Supports: facility, zones, rooms, personnel, emergency_resources,
 evacuation_routes, assembly_points, nearby_services.
@@ -83,7 +83,7 @@ def _clear_facility_scope(table: str, rows: list[dict]) -> None:
     These tables (emergency_resources, evacuation_routes, utility_controls,
     hazmat_locations) have no natural unique key, so a plain re-INSERT would
     duplicate every row. Before loading, we delete the existing rows for the
-    facilities present in this upload — so re-uploading a corrected CSV replaces
+    facilities present in this upload - so re-uploading a corrected CSV replaces
     that facility's rows instead of appending duplicates. ``table`` is a fixed,
     code-supplied name (never user input), so interpolation here is safe.
     """
@@ -102,7 +102,7 @@ def detect_csv_type(headers: list[str]) -> str | None:
     """
     headers_set = set(h.strip().lower() for h in headers)
 
-    # Sort by number of required columns descending — most specific first
+    # Sort by number of required columns descending - most specific first
     sorted_schemas = sorted(SCHEMAS.items(), key=lambda x: len(x[1]), reverse=True)
 
     for csv_type, required in sorted_schemas:
@@ -117,7 +117,7 @@ def ingest_csv(content: str, filename: str = "") -> IngestResult:
 
     Auto-detects the CSV type from column headers.
     """
-    # Strip a UTF-8 BOM — Excel and Google Sheets prepend one on export, which
+    # Strip a UTF-8 BOM - Excel and Google Sheets prepend one on export, which
     # would otherwise corrupt the first header (e.g. "﻿facility_id") and
     # break type detection.
     content = content.lstrip("﻿")
