@@ -1,7 +1,0 @@
-facility_id,material_name,hazard_class,location_description,floor,zone_id,quantity,sds_location,containment_instructions
-jefferson,Hydrochloric Acid (dilute),Corrosive,Room 215 Science Lab chemical cabinet,2,west-wing-f2,500mL bottles x3,SDS binder on lab desk,Neutralize with baking soda. Flush with water. Ventilate room.
-jefferson,Isopropyl Alcohol,Flammable,Room 215 Science Lab chemical cabinet,2,west-wing-f2,1L bottles x2,SDS binder on lab desk,Keep away from ignition sources. Ventilate. Absorb spill with sand.
-jefferson,Acetone,Flammable,Room 215 Science Lab flammable storage cabinet (yellow),2,west-wing-f2,500mL bottle x1,SDS binder on lab desk,Do NOT use water. Absorb with vermiculite. Ventilate.
-jefferson,Natural Gas,Flammable,Cafeteria kitchen - gas range and ovens,1,cafeteria,Piped supply,N/A,Shut off yellow valve in utility room. Evacuate. Do NOT use electrical switches.
-jefferson,Chlorine Bleach,Corrosive,Custodian closet west hallway F1,1,west-wing-f1,2 gallon jugs,Custodian closet door label,Do NOT mix with ammonia. Ventilate. Flush with water.
-jefferson,Art Solvents (Turpentine),Flammable,Room 113 Art Room storage cabinet,1,west-wing-f1,500mL bottles x2,Art room SDS folder,Keep away from heat. Absorb spill with sand. Ventilate.
