@@ -1,4 +1,3 @@
 zone_id,facility_id,name,floor,zone_type,primary_exit,alternate_exit,shelter_location,capacity,notes
-east-wing-f1,main-building,East Wing Floor 1,1,classrooms,Door 3 (East Exit),Door 7 (Gym Exit),Interior hallway A,120,Rooms 101-108
-west-wing-f1,main-building,West Wing Floor 1,1,classrooms,Door 1 (West Exit),Door 5 (Cafeteria Exit),Interior hallway B,120,Rooms 109-116
-admin,main-building,Main Office,1,administrative,Door 2 (Main Entrance),Door 1 (West Exit),Principal inner office,15,Front office area
+zone-a,your-facility,Main Floor,1,general,Front Door,Side Door,Interior hallway (no windows),120,Replace with one row per zone or wing in your building
+zone-b,your-facility,Second Floor,2,general,North Stairwell,South Stairwell,Interior room (no windows),80,zone_type examples: classrooms, administrative, common, general

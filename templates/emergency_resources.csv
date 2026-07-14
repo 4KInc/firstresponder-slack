@@ -1,4 +1,4 @@
 facility_id,resource_type,location_description,floor,zone_id,notes
-main-building,aed,Main office lobby next to front desk,1,admin,
-main-building,first_aid_kit,Nurse office Room 108,1,east-wing-f1,
-main-building,fire_extinguisher,East hallway between rooms 104 and 105,1,east-wing-f1,
+your-facility,aed,Wall-mounted outside Room 101,1,zone-a,Automated external defibrillator
+your-facility,fire_extinguisher,Each stairwell and the kitchen,1,zone-a,Inspect tags annually
+your-facility,first_aid_kit,Front office and break room,1,zone-a,resource_type examples: aed, fire_extinguisher, first_aid_kit, trauma_kit

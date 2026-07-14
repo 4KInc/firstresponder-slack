@@ -1,4 +1,3 @@
 person_id,name,slack_user_id,role,department,default_location,floor,phone,emergency_contact_name,emergency_contact_phone,medical_notes,mobility_limitations,trained_first_aid,trained_cpr,is_floor_warden,evacuation_role
-p001,Principal Johnson,U_PRINCIPAL,Principal,Administration,admin,1,615-555-0101,Mark Johnson,615-555-0102,,false,true,false,true,Incident Commander
-p002,Mrs. Rodriguez,U_RODRIGUEZ,3rd Grade Teacher,Teaching,101,1,615-555-0110,Jose Rodriguez,615-555-0111,,false,false,false,true,Floor Warden - East F1
-p003,Mrs. Davis,U_DAVIS,4th Grade Teacher,Teaching,104,1,615-555-0116,Robert Davis,615-555-0117,Uses wheelchair — elevator required,true,false,false,false,
+person-001,Jane Doe,,Manager,Operations,zone-a,1,555-0101,John Doe,555-0102,,false,true,true,true,Incident Commander
+person-002,Sam Lee,,Coordinator,Operations,zone-b,2,555-0103,Pat Lee,555-0104,Uses wheelchair - needs evacuation assistance,true,false,false,false,

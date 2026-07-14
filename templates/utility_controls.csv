@@ -1,4 +1,4 @@
 facility_id,utility_type,location_description,floor,zone_id,shutoff_instructions,requires_key,key_location
-jefferson,gas,Gas meter room behind cafeteria,1,cafeteria,Turn main valve 90 degrees clockwise until perpendicular to the pipe,true,Front office key box #3
-jefferson,electrical,Main electrical panel in boiler room,0,,Flip main breaker to OFF; sub-panels are labeled by wing,true,Custodial office
-jefferson,water,Water main shutoff in mechanical room,0,,Turn wheel valve clockwise two full turns,false,
+your-facility,gas,Gas meter room,1,zone-a,Turn the main valve 90 degrees until perpendicular to the pipe,true,Facilities office key box
+your-facility,electrical,Main electrical panel,1,zone-a,Throw the MAIN breaker to OFF,false,
+your-facility,water,Water main shutoff,1,zone-a,Turn the main gate valve fully clockwise,true,Facilities office key box

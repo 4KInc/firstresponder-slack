@@ -1,3 +1,2 @@
 title,scenario_type,system_or_service,severity,steps,estimated_minutes,last_tested,owner,notes
-Ransomware Isolation,cyberattack,All systems,critical,"[""Disconnect affected machines"",""Preserve evidence"",""Notify IR team"",""Restore from clean backup""]",120,2026-04-01,IT Director,
-SIS Outage Recovery,outage,sis-server,high,"[""Verify core switch"",""Restart SIS service"",""Failover to backup"",""Notify staff""]",45,2026-05-10,IT Director,
+Ransomware Isolation,cyberattack,All systems,critical,"[""Disconnect affected machines from the network"",""Preserve evidence - do not power off"",""Notify IT and security"",""Restore from a clean verified backup"",""Reset all passwords before reconnecting""]",120,2026-01-01,IT Lead,steps is a JSON list of strings; scenario_type examples: cyberattack, data-breach, outage

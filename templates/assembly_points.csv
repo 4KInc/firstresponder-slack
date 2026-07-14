@@ -1,3 +1,3 @@
 point_id,facility_id,name,location_description,capacity,is_primary,accessibility,notes
-ap-field,main-building,Athletic Field,Behind the gym past the track 500ft from building,500,true,standard,Primary rally point for all evacuations
-ap-parking,main-building,Staff Parking Lot,West side staff parking lot far end near Oak Street,200,false,standard,Alternate if athletic field is compromised
+point-a,your-facility,Primary Assembly Point,Parking lot across the street,300,true,wheelchair accessible,Default rally point for headcount
+point-b,your-facility,Alternate Assembly Point,Community center one block north,300,false,wheelchair accessible,Use if the primary point is unsafe

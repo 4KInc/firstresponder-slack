@@ -1,3 +1,2 @@
 team_name,service,primary_name,primary_slack_id,primary_phone,secondary_name,secondary_slack_id,secondary_phone,escalation_manager,escalation_phone,schedule_notes
-Network and Systems,network,Alex Kim,,615-555-8100,Jordan Lee,,615-555-8101,IT Director,615-555-8000,24x7 rotation
-Physical Security,security,Sam Rivera,,615-555-8200,,,,Principal,615-555-8001,School hours plus events
+IT,security,Primary On-Call,,555-0500,Secondary On-Call,,555-0501,IT Manager,555-0502,24x7 rotation; service examples: security, network, legal

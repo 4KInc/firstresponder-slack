@@ -1,4 +1,3 @@
 room_id,facility_id,name,floor,zone_id,room_type,capacity,notes
-101,main-building,Room 101,1,east-wing-f1,classroom,25,3rd grade
-102,main-building,Room 102,1,east-wing-f1,classroom,25,3rd grade
-103,main-building,Room 103,1,east-wing-f1,classroom,25,4th grade
+room-101,your-facility,Room 101,1,zone-a,office,20,zone_id must match a zone_id from zones.csv
+room-201,your-facility,Room 201,2,zone-b,office,20,room_type examples: classroom, office, lab, storage
